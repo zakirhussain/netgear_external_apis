@@ -1,10 +1,11 @@
 openapi: 3.0.3
 info:
-  title: MSP (Member Service Provider) REST API
+  title: Partner Organization Management API
   description: |
-    This API provides comprehensive management for Member Service Providers (MSPs) and their associated users.
-    All endpoints require session-based authentication and support CORS for cross-origin requests.
-  version: 1.0.0
+    Comprehensive API for managing Partner Organizations, MSPs, Gateways, Users, Sessions, and Billing.
+    This API provides full CRUD operations for all partner-related entities with session-based authentication.
+    All endpoints require X-Auth-Token header for authentication.
+  version: 2.0.0
   contact:
     name: API Support
     email: support@exium.net
@@ -22,6 +23,7 @@ security:
   - SessionAuth: []
 
 paths:
+  # MSP Management Endpoints
   /msp:
     post:
       summary: Create MSP
@@ -34,27 +36,29 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreatePartnerInfoReq'
+              $ref: '#/components/schemas/CreateMSPRequest'
             example:
-              email: "contact@example.com"
-              name: "Example MSP"
+              name: "Acme MSP Services"
+              email: "contact@acmemsp.com"
               phone: "+1234567890"
-              firstName: "John"
-              lastName: "Doe"
-              addressCity: "New York"
-              addressPostcode: "10001"
-              addressCountry: "USA"
-              addressStateOrProvince: "NY"
+              contactPerson: "John Smith"
+              address: "123 Business Ave, City, State 12345"
+              description: "Professional MSP services provider"
       responses:
         '200':
           description: MSP created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreatePartnerInfoRsp'
+                $ref: '#/components/schemas/MSPResponse'
               example:
-                partnerName: "example_msp"
-                partnerID: "550e8400-e29b-41d4-a716-446655440000"
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                name: "Acme MSP Services"
+                email: "contact@acmemsp.com"
+                phone: "+1234567890"
+                contactPerson: "John Smith"
+                status: "active"
+                createdAt: "2024-01-15T10:30:00Z"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -66,8 +70,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
-                errorCode: "PARTNER_ALREADY_EXISTS"
-                message: "Partner with this name already exists"
+                errorCode: "MSP_ALREADY_EXISTS"
+                message: "MSP with this name already exists"
 
     get:
       summary: Get All MSPs
@@ -75,34 +79,56 @@ paths:
       operationId: getAllMSP
       tags:
         - MSP Management
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of MSPs to return
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+        - name: offset
+          in: query
+          description: Number of MSPs to skip
+          schema:
+            type: integer
+            default: 0
+        - name: status
+          in: query
+          description: Filter by MSP status
+          schema:
+            type: string
+            enum: ["active", "suspended", "inactive"]
       responses:
         '200':
           description: List of MSPs retrieved successfully
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CreatePartnerInfoReq'
+                type: object
+                properties:
+                  mspList:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MSPResponse'
+                  totalCount:
+                    type: integer
+                    description: Total number of MSPs
+                  hasMore:
+                    type: boolean
+                    description: Whether there are more MSPs to fetch
               example:
-                - name: "Example MSP 1"
-                  email: "contact1@example.com"
-                  phone: "+1234567890"
-                  firstName: "John"
-                  lastName: "Doe"
-                  addressCity: "New York"
-                  addressPostcode: "10001"
-                  addressCountry: "USA"
-                  addressStateOrProvince: "NY"
-                - name: "Example MSP 2"
-                  email: "contact2@example.com"
-                  phone: "+1234567891"
-                  firstName: "Jane"
-                  lastName: "Smith"
-                  addressCity: "Los Angeles"
-                  addressPostcode: "90210"
-                  addressCountry: "USA"
-                  addressStateOrProvince: "CA"
+                mspList:
+                  - id: "550e8400-e29b-41d4-a716-446655440000"
+                    name: "Acme MSP Services"
+                    email: "contact@acmemsp.com"
+                    status: "active"
+                  - id: "550e8400-e29b-41d4-a716-446655440001"
+                    name: "Beta MSP Solutions"
+                    email: "info@betamsp.com"
+                    status: "active"
+                totalCount: 2
+                hasMore: false
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -128,17 +154,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreatePartnerInfoReq'
+                $ref: '#/components/schemas/MSPResponse'
               example:
-                name: "Example MSP"
-                email: "contact@example.com"
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                name: "Acme MSP Services"
+                email: "contact@acmemsp.com"
                 phone: "+1234567890"
-                firstName: "John"
-                lastName: "Doe"
-                addressCity: "New York"
-                addressPostcode: "10001"
-                addressCountry: "USA"
-                addressStateOrProvince: "NY"
+                contactPerson: "John Smith"
+                address: "123 Business Ave, City, State 12345"
+                status: "active"
+                createdAt: "2024-01-15T10:30:00Z"
+                updatedAt: "2024-01-15T10:30:00Z"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -166,14 +192,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdatePartnerInfoReq'
+              $ref: '#/components/schemas/UpdateMSPRequest'
             example:
               name: "Updated MSP Name"
-              phone: "+1234567890"
-              addressCity: "Updated City"
-              addressPostcode: "10002"
-              addressCountry: "USA"
-              addressStateOrProvince: "NY"
+              email: "newcontact@acmemsp.com"
+              phone: "+1234567891"
+              contactPerson: "Jane Doe"
+              address: "456 New Business St, City, State 54321"
       responses:
         '200':
           description: MSP updated successfully
@@ -221,6 +246,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  # MSP User Management Endpoints
   /msp/user/{mspid}:
     post:
       summary: Create MSP User
@@ -242,27 +268,31 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreatePartnerUserReq'
+              $ref: '#/components/schemas/CreateMSPUserRequest'
             example:
               firstName: "John"
               lastName: "Doe"
-              email: "john.doe@example.com"
+              email: "john.doe@acmemsp.com"
               phone: "+1234567890"
               role: "admin"
+              department: "IT"
       responses:
         '200':
           description: MSP user created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreatePartnerUserReq'
+                $ref: '#/components/schemas/MSPUserResponse'
               example:
-                id: "550e8400-e29b-41d4-a716-446655440000"
+                id: "550e8400-e29b-41d4-a716-446655440001"
                 firstName: "John"
                 lastName: "Doe"
-                email: "john.doe@example.com"
+                email: "john.doe@acmemsp.com"
                 phone: "+1234567890"
                 role: "admin"
+                status: "active"
+                mspId: "550e8400-e29b-41d4-a716-446655440000"
+                createdAt: "2024-01-15T10:30:00Z"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -285,28 +315,59 @@ paths:
             type: string
             format: uuid
             example: "550e8400-e29b-41d4-a716-446655440000"
+        - name: limit
+          in: query
+          description: Maximum number of users to return
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+        - name: offset
+          in: query
+          description: Number of users to skip
+          schema:
+            type: integer
+            default: 0
+        - name: role
+          in: query
+          description: Filter by user role
+          schema:
+            type: string
+            enum: ["admin", "user", "idp", "viewer"]
       responses:
         '200':
           description: List of MSP users retrieved successfully
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CreatePartnerUserReq'
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MSPUserResponse'
+                  totalCount:
+                    type: integer
+                    description: Total number of users
+                  hasMore:
+                    type: boolean
+                    description: Whether there are more users to fetch
               example:
-                - id: "550e8400-e29b-41d4-a716-446655440000"
-                  firstName: "John"
-                  lastName: "Doe"
-                  email: "john.doe@example.com"
-                  phone: "+1234567890"
-                  role: "admin"
-                - id: "550e8400-e29b-41d4-a716-446655440001"
-                  firstName: "Jane"
-                  lastName: "Smith"
-                  email: "jane.smith@example.com"
-                  phone: "+1234567891"
-                  role: "user"
+                users:
+                  - id: "550e8400-e29b-41d4-a716-446655440001"
+                    firstName: "John"
+                    lastName: "Doe"
+                    email: "john.doe@acmemsp.com"
+                    role: "admin"
+                    status: "active"
+                  - id: "550e8400-e29b-41d4-a716-446655440002"
+                    firstName: "Jane"
+                    lastName: "Smith"
+                    email: "jane.smith@acmemsp.com"
+                    role: "user"
+                    status: "active"
+                totalCount: 2
+                hasMore: false
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -344,14 +405,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreatePartnerUserReq'
+                $ref: '#/components/schemas/MSPUserResponse'
               example:
-                id: "550e8400-e29b-41d4-a716-446655440000"
+                id: "550e8400-e29b-41d4-a716-446655440001"
                 firstName: "John"
                 lastName: "Doe"
-                email: "john.doe@example.com"
+                email: "john.doe@acmemsp.com"
                 phone: "+1234567890"
                 role: "admin"
+                status: "active"
+                mspId: "550e8400-e29b-41d4-a716-446655440000"
+                createdAt: "2024-01-15T10:30:00Z"
+                updatedAt: "2024-01-15T10:30:00Z"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -387,13 +452,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreatePartnerUserReq'
+              $ref: '#/components/schemas/UpdateMSPUserRequest'
             example:
               firstName: "John"
               lastName: "Doe"
-              email: "john.doe.updated@example.com"
-              phone: "+1234567890"
+              email: "john.doe.updated@acmemsp.com"
+              phone: "+1234567891"
               role: "admin"
+              department: "Engineering"
       responses:
         '200':
           description: MSP user updated successfully
@@ -449,6 +515,1030 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  # Partner Organization Management Endpoints
+  /partner/organisation:
+    post:
+      summary: Create Partner Organization
+      description: Creates a new partner organization
+      operationId: createPartnerOrganisation
+      tags:
+        - Partner Organization Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePartnerOrgRequest'
+            example:
+              name: "Acme Corporation"
+              email: "contact@acme.com"
+              phone: "+1234567890"
+              address: "123 Business St, City, State 12345"
+              contactPerson: "John Doe"
+              industry: "Technology"
+              size: "Enterprise"
+      responses:
+        '200':
+          description: Partner organization created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerOrgResponse'
+              example:
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                name: "Acme Corporation"
+                email: "contact@acme.com"
+                phone: "+1234567890"
+                status: "active"
+                createdAt: "2024-01-15T10:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Organization with this name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                errorCode: "ORG_ALREADY_EXISTS"
+                message: "Organization with this name already exists"
+
+  /partner/organisation/{orgid}:
+    get:
+      summary: Get Partner Organization
+      description: Retrieves details of a specific partner organization
+      operationId: getPartnerOrganisation
+      tags:
+        - Partner Organization Management
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Organization details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerOrgResponse'
+              example:
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                name: "Acme Corporation"
+                email: "contact@acme.com"
+                phone: "+1234567890"
+                address: "123 Business St, City, State 12345"
+                contactPerson: "John Doe"
+                status: "active"
+                createdAt: "2024-01-15T10:30:00Z"
+                updatedAt: "2024-01-15T10:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Update Partner Organization
+      description: Updates an existing partner organization
+      operationId: updatePartnerOrganisation
+      tags:
+        - Partner Organization Management
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePartnerOrgRequest'
+            example:
+              name: "Updated Acme Corporation"
+              email: "newcontact@acme.com"
+              phone: "+1234567891"
+              address: "456 New Business St, City, State 54321"
+              contactPerson: "Jane Smith"
+      responses:
+        '200':
+          description: Organization updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: "Organization updated successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete Partner Organization
+      description: Deletes an existing partner organization
+      operationId: deletePartnerOrganisation
+      tags:
+        - Partner Organization Management
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Organization deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: "Organization deleted successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /partner/organisations:
+    get:
+      summary: Get All Partner Organizations
+      description: Retrieves a list of all partner organizations
+      operationId: getPartnerAllOrganisations
+      tags:
+        - Partner Organization Management
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of organizations to return
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+        - name: offset
+          in: query
+          description: Number of organizations to skip
+          schema:
+            type: integer
+            default: 0
+        - name: status
+          in: query
+          description: Filter by organization status
+          schema:
+            type: string
+            enum: ["active", "suspended", "inactive"]
+      responses:
+        '200':
+          description: List of organizations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organizations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PartnerOrgResponse'
+                  totalCount:
+                    type: integer
+                    description: Total number of organizations
+                  hasMore:
+                    type: boolean
+                    description: Whether there are more organizations to fetch
+              example:
+                organizations:
+                  - id: "550e8400-e29b-41d4-a716-446655440000"
+                    name: "Acme Corporation"
+                    email: "contact@acme.com"
+                    status: "active"
+                  - id: "550e8400-e29b-41d4-a716-446655440001"
+                    name: "Beta Industries"
+                    email: "info@beta.com"
+                    status: "active"
+                totalCount: 2
+                hasMore: false
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Partner Organization Session Management
+  /partner/organisation/session/{orgid}:
+    post:
+      summary: Create Organization Session
+      description: Creates a new session for a partner organization
+      operationId: createPartnerOrganisationSession
+      tags:
+        - Session Management
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+            example:
+              sessionType: "api"
+              expiresAt: "2024-02-15T10:30:00Z"
+              permissions: ["read", "write"]
+              metadata:
+                clientIP: "192.168.1.100"
+                userAgent: "Mozilla/5.0"
+      responses:
+        '200':
+          description: Session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+              example:
+                sessionId: "550e8400-e29b-41d4-a716-446655440002"
+                sessionType: "api"
+                expiresAt: "2024-02-15T10:30:00Z"
+                status: "active"
+                createdAt: "2024-01-15T10:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /partner/organisation/session/{sessionid}:
+    put:
+      summary: Update Organization Session
+      description: Updates an existing organization session
+      operationId: updatePartnerOrganisationSession
+      tags:
+        - Session Management
+      parameters:
+        - name: sessionid
+          in: path
+          required: true
+          description: Unique identifier of the session
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440002"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSessionRequest'
+            example:
+              expiresAt: "2024-03-15T10:30:00Z"
+              permissions: ["read", "write", "admin"]
+              metadata:
+                lastActivity: "2024-01-15T10:30:00Z"
+      responses:
+        '200':
+          description: Session updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: "Session updated successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete Organization Session
+      description: Deletes an existing organization session
+      operationId: deletePartnerOrganisationSession
+      tags:
+        - Session Management
+      parameters:
+        - name: sessionid
+          in: path
+          required: true
+          description: Unique identifier of the session
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440002"
+      responses:
+        '200':
+          description: Session deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: "Session deleted successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Partner Organization Subscription Management
+  /partner/organisation/subscription/{orgid}:
+    put:
+      summary: Update Organization Subscription
+      description: Updates subscription details for a partner organization
+      operationId: updatePartnerOrganisationSubscription
+      tags:
+        - Subscription Management
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSubscriptionRequest'
+            example:
+              planType: "premium"
+              maxUsers: 1000
+              maxGateways: 50
+              features: ["advanced_analytics", "priority_support"]
+              billingCycle: "monthly"
+      responses:
+        '200':
+          description: Subscription updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: "Subscription updated successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /partner/organisation/suspend/{orgid}:
+    put:
+      summary: Suspend Organization
+      description: Suspends a partner organization
+      operationId: suspendPartnerOrganisation
+      tags:
+        - Subscription Management
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuspendOrgRequest'
+            example:
+              reason: "Payment overdue"
+              suspendUntil: "2024-02-15T10:30:00Z"
+              notifyUsers: true
+      responses:
+        '200':
+          description: Organization suspended successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: "Organization suspended successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /partner/organisation/activate/{orgid}:
+    put:
+      summary: Activate Organization
+      description: Activates a suspended partner organization
+      operationId: activatePartnerOrganisation
+      tags:
+        - Subscription Management
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Organization activated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: "Organization activated successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Partner Usage and Billing
+  /partner/usage:
+    get:
+      summary: Get Partner Billing Usage
+      description: Retrieves billing usage information for the partner
+      operationId: getPartnerBillingUsage
+      tags:
+        - Billing & Usage
+      parameters:
+        - name: startDate
+          in: query
+          description: Start date for usage query (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: "2024-01-01"
+        - name: endDate
+          in: query
+          description: End date for usage query (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: "2024-01-31"
+        - name: serviceType
+          in: query
+          description: Filter by service type
+          schema:
+            type: string
+            enum: ["api", "gateway", "storage", "bandwidth"]
+      responses:
+        '200':
+          description: Billing usage retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingUsageResponse'
+              example:
+                totalUsage: 1500.50
+                usageByService:
+                  api: 500.25
+                  gateway: 750.00
+                  storage: 200.25
+                  bandwidth: 50.00
+                billingPeriod:
+                  startDate: "2024-01-01"
+                  endDate: "2024-01-31"
+                lastUpdated: "2024-01-31T23:59:59Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /partner/usage/{orgid}:
+    get:
+      summary: Get Organization Usage
+      description: Retrieves usage information for a specific organization
+      operationId: getPartnerOrgUsage
+      tags:
+        - Billing & Usage
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+        - name: startDate
+          in: query
+          description: Start date for usage query (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: "2024-01-01"
+        - name: endDate
+          in: query
+          description: End date for usage query (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+            example: "2024-01-31"
+      responses:
+        '200':
+          description: Organization usage retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgUsageResponse'
+              example:
+                orgId: "550e8400-e29b-41d4-a716-446655440000"
+                orgName: "Acme Corporation"
+                totalUsage: 750.25
+                services:
+                  - serviceName: "API Calls"
+                    usage: 500.00
+                    unit: "requests"
+                  - serviceName: "Gateway Hours"
+                    usage: 250.25
+                    unit: "hours"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Partner Token Management
+  /partner/token:
+    post:
+      summary: Generate Partner Session Token
+      description: Generates a new session token for the partner
+      operationId: generatePartnerSessionToken
+      tags:
+        - Token Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateTokenRequest'
+            example:
+              tokenType: "access"
+              expiresIn: 3600
+              scope: ["read", "write"]
+              organizationId: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Token generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              example:
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                tokenType: "access"
+                expiresIn: 3600
+                scope: ["read", "write"]
+                expiresAt: "2024-01-15T11:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Partner Organization Gateway Management
+  /partner/organisation/gateway/{orgid}:
+    post:
+      summary: Create Organization Gateway
+      description: Creates a new gateway for a partner organization
+      operationId: createPartnerOrgCGW
+      tags:
+        - Gateway Management
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGatewayRequest'
+            example:
+              name: "Main Office Gateway"
+              gatewayType: "netgear"
+              location: "New York Office"
+              configuration:
+                ipAddress: "192.168.1.1"
+                port: 8080
+                protocol: "https"
+              description: "Primary gateway for main office"
+      responses:
+        '200':
+          description: Gateway created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayResponse'
+              example:
+                id: "550e8400-e29b-41d4-a716-446655440003"
+                name: "Main Office Gateway"
+                gatewayType: "netgear"
+                location: "New York Office"
+                status: "active"
+                orgId: "550e8400-e29b-41d4-a716-446655440000"
+                createdAt: "2024-01-15T10:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    get:
+      summary: Get All Organization Gateways
+      description: Retrieves all gateways for a partner organization
+      operationId: getPartnerOrgAllCGW
+      tags:
+        - Gateway Management
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+        - name: limit
+          in: query
+          description: Maximum number of gateways to return
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+        - name: offset
+          in: query
+          description: Number of gateways to skip
+          schema:
+            type: integer
+            default: 0
+        - name: status
+          in: query
+          description: Filter by gateway status
+          schema:
+            type: string
+            enum: ["active", "inactive", "maintenance"]
+      responses:
+        '200':
+          description: Gateways retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  gateways:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GatewayResponse'
+                  totalCount:
+                    type: integer
+                    description: Total number of gateways
+                  hasMore:
+                    type: boolean
+                    description: Whether there are more gateways to fetch
+              example:
+                gateways:
+                  - id: "550e8400-e29b-41d4-a716-446655440003"
+                    name: "Main Office Gateway"
+                    gatewayType: "netgear"
+                    status: "active"
+                  - id: "550e8400-e29b-41d4-a716-446655440004"
+                    name: "Branch Office Gateway"
+                    gatewayType: "cisco"
+                    status: "active"
+                totalCount: 2
+                hasMore: false
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /partner/organisation/gateway/{orgid}/{cgwid}:
+    get:
+      summary: Get Organization Gateway
+      description: Retrieves details of a specific gateway
+      operationId: getPartnerOrgCGW
+      tags:
+        - Gateway Management
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+        - name: cgwid
+          in: path
+          required: true
+          description: Unique identifier of the gateway
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440003"
+      responses:
+        '200':
+          description: Gateway details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayResponse'
+              example:
+                id: "550e8400-e29b-41d4-a716-446655440003"
+                name: "Main Office Gateway"
+                gatewayType: "netgear"
+                location: "New York Office"
+                status: "active"
+                orgId: "550e8400-e29b-41d4-a716-446655440000"
+                createdAt: "2024-01-15T10:30:00Z"
+                updatedAt: "2024-01-15T10:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Update Organization Gateway
+      description: Updates an existing gateway
+      operationId: updatePartnerOrgCGW
+      tags:
+        - Gateway Management
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+        - name: cgwid
+          in: path
+          required: true
+          description: Unique identifier of the gateway
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440003"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGatewayRequest'
+            example:
+              name: "Updated Main Office Gateway"
+              location: "Updated New York Office"
+              configuration:
+                ipAddress: "192.168.1.2"
+                port: 8080
+                protocol: "https"
+              description: "Updated primary gateway"
+      responses:
+        '200':
+          description: Gateway updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: "Gateway updated successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete Organization Gateway
+      description: Deletes an existing gateway
+      operationId: deletePartnerOrgCGW
+      tags:
+        - Gateway Management
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+        - name: cgwid
+          in: path
+          required: true
+          description: Unique identifier of the gateway
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440003"
+      responses:
+        '200':
+          description: Gateway deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: "Gateway deleted successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Gateway Session Management
+  /partner/organisation/gateway/session/{orgid}/{cgwid}:
+    post:
+      summary: Create Gateway Session
+      description: Creates a new session for a gateway
+      operationId: createPartnerOrgCgwSession
+      tags:
+        - Gateway Session Management
+      parameters:
+        - name: orgid
+          in: path
+          required: true
+          description: Unique identifier of the organization
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440000"
+        - name: cgwid
+          in: path
+          required: true
+          description: Unique identifier of the gateway
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440003"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGatewaySessionRequest'
+            example:
+              sessionType: "management"
+              expiresAt: "2024-02-15T10:30:00Z"
+              permissions: ["configure", "monitor"]
+              metadata:
+                clientIP: "192.168.1.100"
+                userAgent: "Gateway Manager v2.1"
+      responses:
+        '200':
+          description: Gateway session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewaySessionResponse'
+              example:
+                sessionId: "550e8400-e29b-41d4-a716-446655440005"
+                sessionType: "management"
+                expiresAt: "2024-02-15T10:30:00Z"
+                status: "active"
+                gatewayId: "550e8400-e29b-41d4-a716-446655440003"
+                createdAt: "2024-01-15T10:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /partner/organisation/gateway/session/{sessionid}/{cgwid}:
+    put:
+      summary: Update Gateway Session
+      description: Updates an existing gateway session
+      operationId: updatePartnerOrgCgwSession
+      tags:
+        - Gateway Session Management
+      parameters:
+        - name: sessionid
+          in: path
+          required: true
+          description: Unique identifier of the session
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440005"
+        - name: cgwid
+          in: path
+          required: true
+          description: Unique identifier of the gateway
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440003"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGatewaySessionRequest'
+            example:
+              expiresAt: "2024-03-15T10:30:00Z"
+              permissions: ["configure", "monitor", "admin"]
+              metadata:
+                lastActivity: "2024-01-15T10:30:00Z"
+      responses:
+        '200':
+          description: Gateway session updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: "Gateway session updated successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      summary: Delete Gateway Session
+      description: Deletes an existing gateway session
+      operationId: deletePartnerOrgCgwSession
+      tags:
+        - Gateway Session Management
+      parameters:
+        - name: sessionid
+          in: path
+          required: true
+          description: Unique identifier of the session
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440005"
+        - name: cgwid
+          in: path
+          required: true
+          description: Unique identifier of the gateway
+          schema:
+            type: string
+            format: uuid
+            example: "550e8400-e29b-41d4-a716-446655440003"
+      responses:
+        '200':
+          description: Gateway session deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessMessage'
+              example:
+                message: "Gateway session deleted successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
 components:
   securitySchemes:
     SessionAuth:
@@ -458,101 +1548,105 @@ components:
       description: Session-based authentication token
 
   schemas:
-    CreatePartnerInfoReq:
+    # MSP Management Schemas
+    CreateMSPRequest:
       type: object
       required:
-        - email
         - name
+        - email
         - phone
-        - firstName
-        - lastName
+        - contactPerson
       properties:
+        name:
+          type: string
+          description: MSP name
+          example: "Acme MSP Services"
         email:
           type: string
           format: email
-          description: Contact email for the MSP
-          example: "contact@example.com"
-        name:
-          type: string
-          description: Name of the MSP organization
-          example: "Example MSP"
+          description: MSP contact email
+          example: "contact@acmemsp.com"
         phone:
           type: string
-          description: Contact phone number
+          description: MSP phone number
           example: "+1234567890"
-        firstName:
+        contactPerson:
           type: string
-          description: First name of the contact person
-          example: "John"
-        lastName:
+          description: Primary contact person
+          example: "John Smith"
+        address:
           type: string
-          description: Last name of the contact person
-          example: "Doe"
-        addressCity:
+          description: MSP address
+          example: "123 Business Ave, City, State 12345"
+        description:
           type: string
-          description: City address
-          example: "New York"
-        addressPostcode:
-          type: string
-          description: Postal code
-          example: "10001"
-        addressCountry:
-          type: string
-          description: Country
-          example: "USA"
-        addressStateOrProvince:
-          type: string
-          description: State or province
-          example: "NY"
+          description: MSP description
+          example: "Professional MSP services provider"
 
-    CreatePartnerInfoRsp:
+    MSPResponse:
       type: object
-      required:
-        - partnerName
-        - partnerID
       properties:
-        partnerName:
-          type: string
-          description: Generated partner name (original name with "msp_" prefix)
-          example: "example_msp"
-        partnerID:
+        id:
           type: string
           format: uuid
-          description: Unique identifier for the created MSP
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          description: Unique MSP identifier
+        name:
+          type: string
+          description: MSP name
+        email:
+          type: string
+          format: email
+          description: MSP email
+        phone:
+          type: string
+          description: MSP phone
+        contactPerson:
+          type: string
+          description: Primary contact person
+        address:
+          type: string
+          description: MSP address
+        description:
+          type: string
+          description: MSP description
+        status:
+          type: string
+          enum: ["active", "suspended", "inactive"]
+          description: MSP status
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
 
-    UpdatePartnerInfoReq:
+    UpdateMSPRequest:
       type: object
-      required:
-        - name
-        - phone
       properties:
         name:
           type: string
-          description: Updated name of the MSP
-          example: "Updated MSP Name"
+          description: Updated MSP name
+        email:
+          type: string
+          format: email
+          description: Updated MSP email
         phone:
           type: string
-          description: Updated phone number
-          example: "+1234567890"
-        addressCity:
+          description: Updated MSP phone
+        contactPerson:
           type: string
-          description: Updated city
-          example: "Updated City"
-        addressPostcode:
+          description: Updated contact person
+        address:
           type: string
-          description: Updated postal code
-          example: "10002"
-        addressCountry:
+          description: Updated MSP address
+        description:
           type: string
-          description: Updated country
-          example: "USA"
-        addressStateOrProvince:
-          type: string
-          description: Updated state or province
-          example: "NY"
+          description: Updated MSP description
 
-    CreatePartnerUserReq:
+    # MSP User Management Schemas
+    CreateMSPUserRequest:
       type: object
       required:
         - firstName
@@ -561,11 +1655,6 @@ components:
         - phone
         - role
       properties:
-        id:
-          type: string
-          format: uuid
-          description: Unique identifier for the user (generated on creation)
-          example: "550e8400-e29b-41d4-a716-446655440000"
         firstName:
           type: string
           description: User's first name
@@ -578,17 +1667,602 @@ components:
           type: string
           format: email
           description: User's email address
-          example: "john.doe@example.com"
+          example: "john.doe@acmemsp.com"
         phone:
           type: string
           description: User's phone number
           example: "+1234567890"
         role:
           type: string
+          enum: ["admin", "user", "idp", "viewer"]
           description: User's role
-          enum: ["admin", "user", "idp"]
           example: "admin"
+        department:
+          type: string
+          description: User's department
+          example: "IT"
 
+    MSPUserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique user identifier
+        firstName:
+          type: string
+          description: User's first name
+        lastName:
+          type: string
+          description: User's last name
+        email:
+          type: string
+          format: email
+          description: User's email
+        phone:
+          type: string
+          description: User's phone
+        role:
+          type: string
+          description: User's role
+        department:
+          type: string
+          description: User's department
+        status:
+          type: string
+          enum: ["active", "inactive", "suspended"]
+          description: User status
+        mspId:
+          type: string
+          format: uuid
+          description: Associated MSP ID
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    UpdateMSPUserRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: Updated first name
+        lastName:
+          type: string
+          description: Updated last name
+        email:
+          type: string
+          format: email
+          description: Updated email
+        phone:
+          type: string
+          description: Updated phone
+        role:
+          type: string
+          enum: ["admin", "user", "idp", "viewer"]
+          description: Updated role
+        department:
+          type: string
+          description: Updated department
+
+    # Partner Organization Schemas
+    CreatePartnerOrgRequest:
+      type: object
+      required:
+        - name
+        - email
+        - phone
+        - contactPerson
+      properties:
+        name:
+          type: string
+          description: Organization name
+          example: "Acme Corporation"
+        email:
+          type: string
+          format: email
+          description: Organization contact email
+          example: "contact@acme.com"
+        phone:
+          type: string
+          description: Organization phone number
+          example: "+1234567890"
+        address:
+          type: string
+          description: Organization address
+          example: "123 Business St, City, State 12345"
+        contactPerson:
+          type: string
+          description: Primary contact person
+          example: "John Doe"
+        industry:
+          type: string
+          description: Organization industry
+          example: "Technology"
+        size:
+          type: string
+          enum: ["startup", "small", "medium", "enterprise"]
+          description: Organization size
+          example: "Enterprise"
+
+    PartnerOrgResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique organization identifier
+        name:
+          type: string
+          description: Organization name
+        email:
+          type: string
+          format: email
+          description: Organization email
+        phone:
+          type: string
+          description: Organization phone
+        address:
+          type: string
+          description: Organization address
+        contactPerson:
+          type: string
+          description: Primary contact person
+        industry:
+          type: string
+          description: Organization industry
+        size:
+          type: string
+          description: Organization size
+        status:
+          type: string
+          enum: ["active", "suspended", "inactive"]
+          description: Organization status
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    UpdatePartnerOrgRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Updated organization name
+        email:
+          type: string
+          format: email
+          description: Updated organization email
+        phone:
+          type: string
+          description: Updated organization phone
+        address:
+          type: string
+          description: Updated organization address
+        contactPerson:
+          type: string
+          description: Updated primary contact person
+        industry:
+          type: string
+          description: Updated organization industry
+        size:
+          type: string
+          enum: ["startup", "small", "medium", "enterprise"]
+          description: Updated organization size
+
+    # Session Management Schemas
+    CreateSessionRequest:
+      type: object
+      required:
+        - sessionType
+        - expiresAt
+      properties:
+        sessionType:
+          type: string
+          enum: ["api", "web", "mobile"]
+          description: Type of session
+          example: "api"
+        expiresAt:
+          type: string
+          format: date-time
+          description: Session expiration time
+          example: "2024-02-15T10:30:00Z"
+        permissions:
+          type: array
+          items:
+            type: string
+          description: Session permissions
+          example: ["read", "write"]
+        metadata:
+          type: object
+          description: Additional session metadata
+          example:
+            clientIP: "192.168.1.100"
+            userAgent: "Mozilla/5.0"
+
+    SessionResponse:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+          description: Unique session identifier
+        sessionType:
+          type: string
+          description: Type of session
+        expiresAt:
+          type: string
+          format: date-time
+          description: Session expiration time
+        permissions:
+          type: array
+          items:
+            type: string
+          description: Session permissions
+        status:
+          type: string
+          enum: ["active", "expired", "revoked"]
+          description: Session status
+        createdAt:
+          type: string
+          format: date-time
+          description: Session creation time
+
+    UpdateSessionRequest:
+      type: object
+      properties:
+        expiresAt:
+          type: string
+          format: date-time
+          description: Updated session expiration time
+        permissions:
+          type: array
+          items:
+            type: string
+          description: Updated session permissions
+        metadata:
+          type: object
+          description: Updated session metadata
+
+    # Subscription Management Schemas
+    UpdateSubscriptionRequest:
+      type: object
+      required:
+        - planType
+      properties:
+        planType:
+          type: string
+          enum: ["basic", "premium", "enterprise"]
+          description: Subscription plan type
+          example: "premium"
+        maxUsers:
+          type: integer
+          description: Maximum number of users allowed
+          example: 1000
+        maxGateways:
+          type: integer
+          description: Maximum number of gateways allowed
+          example: 50
+        features:
+          type: array
+          items:
+            type: string
+          description: Enabled features
+          example: ["advanced_analytics", "priority_support"]
+        billingCycle:
+          type: string
+          enum: ["monthly", "quarterly", "yearly"]
+          description: Billing cycle
+          example: "monthly"
+
+    SuspendOrgRequest:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+          description: Reason for suspension
+          example: "Payment overdue"
+        suspendUntil:
+          type: string
+          format: date-time
+          description: Suspension end date (optional)
+          example: "2024-02-15T10:30:00Z"
+        notifyUsers:
+          type: boolean
+          description: Whether to notify users about suspension
+          example: true
+
+    # Billing and Usage Schemas
+    BillingUsageResponse:
+      type: object
+      properties:
+        totalUsage:
+          type: number
+          format: float
+          description: Total usage amount
+          example: 1500.50
+        usageByService:
+          type: object
+          description: Usage breakdown by service
+          example:
+            api: 500.25
+            gateway: 750.00
+            storage: 200.25
+            bandwidth: 50.00
+        billingPeriod:
+          type: object
+          properties:
+            startDate:
+              type: string
+              format: date
+              description: Billing period start date
+            endDate:
+              type: string
+              format: date
+              description: Billing period end date
+        lastUpdated:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    OrgUsageResponse:
+      type: object
+      properties:
+        orgId:
+          type: string
+          format: uuid
+          description: Organization ID
+        orgName:
+          type: string
+          description: Organization name
+        totalUsage:
+          type: number
+          format: float
+          description: Total usage amount
+        services:
+          type: array
+          items:
+            type: object
+            properties:
+              serviceName:
+                type: string
+                description: Service name
+              usage:
+                type: number
+                format: float
+                description: Usage amount
+              unit:
+                type: string
+                description: Usage unit
+
+    # Token Management Schemas
+    GenerateTokenRequest:
+      type: object
+      required:
+        - tokenType
+        - expiresIn
+      properties:
+        tokenType:
+          type: string
+          enum: ["access", "refresh", "api"]
+          description: Type of token to generate
+          example: "access"
+        expiresIn:
+          type: integer
+          description: Token expiration time in seconds
+          example: 3600
+        scope:
+          type: array
+          items:
+            type: string
+          description: Token scopes
+          example: ["read", "write"]
+        organizationId:
+          type: string
+          format: uuid
+          description: Associated organization ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Generated token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        tokenType:
+          type: string
+          description: Type of token
+        expiresIn:
+          type: integer
+          description: Token expiration time in seconds
+        scope:
+          type: array
+          items:
+            type: string
+          description: Token scopes
+        expiresAt:
+          type: string
+          format: date-time
+          description: Token expiration timestamp
+
+    # Gateway Management Schemas
+    CreateGatewayRequest:
+      type: object
+      required:
+        - name
+        - gatewayType
+        - location
+      properties:
+        name:
+          type: string
+          description: Gateway name
+          example: "Main Office Gateway"
+        gatewayType:
+          type: string
+          enum: ["netgear", "cisco", "juniper", "custom"]
+          description: Type of gateway
+          example: "netgear"
+        location:
+          type: string
+          description: Gateway location
+          example: "New York Office"
+        configuration:
+          type: object
+          description: Gateway-specific configuration
+          example:
+            ipAddress: "192.168.1.1"
+            port: 8080
+            protocol: "https"
+        description:
+          type: string
+          description: Gateway description
+          example: "Primary gateway for main office"
+
+    GatewayResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique gateway identifier
+        name:
+          type: string
+          description: Gateway name
+        gatewayType:
+          type: string
+          description: Type of gateway
+        location:
+          type: string
+          description: Gateway location
+        configuration:
+          type: object
+          description: Gateway configuration
+        description:
+          type: string
+          description: Gateway description
+        status:
+          type: string
+          enum: ["active", "inactive", "maintenance"]
+          description: Gateway status
+        orgId:
+          type: string
+          format: uuid
+          description: Associated organization ID
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    UpdateGatewayRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Updated gateway name
+        location:
+          type: string
+          description: Updated gateway location
+        configuration:
+          type: object
+          description: Updated gateway configuration
+        description:
+          type: string
+          description: Updated gateway description
+
+    # Gateway Session Schemas
+    CreateGatewaySessionRequest:
+      type: object
+      required:
+        - sessionType
+        - expiresAt
+      properties:
+        sessionType:
+          type: string
+          enum: ["management", "monitoring", "configuration"]
+          description: Type of gateway session
+          example: "management"
+        expiresAt:
+          type: string
+          format: date-time
+          description: Session expiration time
+          example: "2024-02-15T10:30:00Z"
+        permissions:
+          type: array
+          items:
+            type: string
+          description: Session permissions
+          example: ["configure", "monitor"]
+        metadata:
+          type: object
+          description: Additional session metadata
+          example:
+            clientIP: "192.168.1.100"
+            userAgent: "Gateway Manager v2.1"
+
+    GatewaySessionResponse:
+      type: object
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+          description: Unique session identifier
+        sessionType:
+          type: string
+          description: Type of session
+        expiresAt:
+          type: string
+          format: date-time
+          description: Session expiration time
+        permissions:
+          type: array
+          items:
+            type: string
+          description: Session permissions
+        status:
+          type: string
+          enum: ["active", "expired", "revoked"]
+          description: Session status
+        gatewayId:
+          type: string
+          format: uuid
+          description: Associated gateway ID
+        createdAt:
+          type: string
+          format: date-time
+          description: Session creation time
+
+    UpdateGatewaySessionRequest:
+      type: object
+      properties:
+        expiresAt:
+          type: string
+          format: date-time
+          description: Updated session expiration time
+        permissions:
+          type: array
+          items:
+            type: string
+          description: Updated session permissions
+        metadata:
+          type: object
+          description: Updated session metadata
+
+    # Common Response Schemas
     SuccessMessage:
       type: object
       required:
@@ -608,11 +2282,11 @@ components:
         errorCode:
           type: string
           description: Error code
-          example: "SESSION_ID_NOT_FOUND"
+          example: "INVALID_REQUEST"
         message:
           type: string
           description: Error message
-          example: "Session ID not found in request"
+          example: "Invalid request parameters"
 
   responses:
     BadRequest:
@@ -650,3 +2324,17 @@ tags:
     description: Operations for managing Member Service Providers
   - name: MSP User Management
     description: Operations for managing users within MSPs
+  - name: Partner Organization Management
+    description: Operations for managing partner organizations
+  - name: Session Management
+    description: Operations for managing organization sessions
+  - name: Subscription Management
+    description: Operations for managing subscriptions and organization status
+  - name: Billing & Usage
+    description: Operations for billing and usage tracking
+  - name: Token Management
+    description: Operations for generating and managing tokens
+  - name: Gateway Management
+    description: Operations for managing organization gateways
+  - name: Gateway Session Management
+    description: Operations for managing gateway sessions
