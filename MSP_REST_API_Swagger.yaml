@@ -1,11 +1,11 @@
 openapi: 3.0.3
 info:
-  title: Partner Organization Management API
+  title: MSP REST API
   description: |
-    Comprehensive API for managing Partner Organizations, MSPs, Gateways, Users, Sessions, and Billing.
-    This API provides full CRUD operations for all partner-related entities with session-based authentication.
-    All endpoints require X-Auth-Token header for authentication.
-  version: 2.0.0
+    Comprehensive REST API for managing Member Service Providers (MSPs), Partner Organizations, 
+    Gateways, Users, Sessions, and Billing. All endpoints require session-based authentication 
+    using X-Auth-Token header.
+  version: 1.0.0
   contact:
     name: API Support
     email: support@exium.net
@@ -23,7 +23,7 @@ security:
   - SessionAuth: []
 
 paths:
-  # MSP Management Endpoints
+  # CRUD MSP
   /msp:
     post:
       summary: Create MSP
@@ -246,7 +246,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # MSP User Management Endpoints
+  # CRUD MSP User
   /msp/user/{mspid}:
     post:
       summary: Create MSP User
@@ -515,14 +515,14 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # Partner Organization Management Endpoints
+  # CRUD MSP Organisation
   /partner/organisation:
     post:
-      summary: Create Partner Organization
-      description: Creates a new partner organization
+      summary: Create Partner Organisation
+      description: Creates a new partner organisation
       operationId: createPartnerOrganisation
       tags:
-        - Partner Organization Management
+        - Partner Organisation Management
       requestBody:
         required: true
         content:
@@ -539,7 +539,7 @@ paths:
               size: "Enterprise"
       responses:
         '200':
-          description: Partner organization created successfully
+          description: Partner organisation created successfully
           content:
             application/json:
               schema:
@@ -556,34 +556,34 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '409':
-          description: Organization with this name already exists
+          description: Organisation with this name already exists
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               example:
                 errorCode: "ORG_ALREADY_EXISTS"
-                message: "Organization with this name already exists"
+                message: "Organisation with this name already exists"
 
   /partner/organisation/{orgid}:
     get:
-      summary: Get Partner Organization
-      description: Retrieves details of a specific partner organization
+      summary: Get Partner Organisation
+      description: Retrieves details of a specific partner organisation
       operationId: getPartnerOrganisation
       tags:
-        - Partner Organization Management
+        - Partner Organisation Management
       parameters:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
             example: "550e8400-e29b-41d4-a716-446655440000"
       responses:
         '200':
-          description: Organization details retrieved successfully
+          description: Organisation details retrieved successfully
           content:
             application/json:
               schema:
@@ -606,16 +606,16 @@ paths:
           $ref: '#/components/responses/NotFound'
 
     put:
-      summary: Update Partner Organization
-      description: Updates an existing partner organization
+      summary: Update Partner Organisation
+      description: Updates an existing partner organisation
       operationId: updatePartnerOrganisation
       tags:
-        - Partner Organization Management
+        - Partner Organisation Management
       parameters:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
@@ -634,13 +634,13 @@ paths:
               contactPerson: "Jane Smith"
       responses:
         '200':
-          description: Organization updated successfully
+          description: Organisation updated successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessMessage'
               example:
-                message: "Organization updated successfully"
+                message: "Organisation updated successfully"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -649,29 +649,29 @@ paths:
           $ref: '#/components/responses/NotFound'
 
     delete:
-      summary: Delete Partner Organization
-      description: Deletes an existing partner organization
+      summary: Delete Partner Organisation
+      description: Deletes an existing partner organisation
       operationId: deletePartnerOrganisation
       tags:
-        - Partner Organization Management
+        - Partner Organisation Management
       parameters:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
             example: "550e8400-e29b-41d4-a716-446655440000"
       responses:
         '200':
-          description: Organization deleted successfully
+          description: Organisation deleted successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessMessage'
               example:
-                message: "Organization deleted successfully"
+                message: "Organisation deleted successfully"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -681,51 +681,51 @@ paths:
 
   /partner/organisations:
     get:
-      summary: Get All Partner Organizations
-      description: Retrieves a list of all partner organizations
+      summary: Get All Partner Organisations
+      description: Retrieves a list of all partner organisations
       operationId: getPartnerAllOrganisations
       tags:
-        - Partner Organization Management
+        - Partner Organisation Management
       parameters:
         - name: limit
           in: query
-          description: Maximum number of organizations to return
+          description: Maximum number of organisations to return
           schema:
             type: integer
             default: 100
             maximum: 1000
         - name: offset
           in: query
-          description: Number of organizations to skip
+          description: Number of organisations to skip
           schema:
             type: integer
             default: 0
         - name: status
           in: query
-          description: Filter by organization status
+          description: Filter by organisation status
           schema:
             type: string
             enum: ["active", "suspended", "inactive"]
       responses:
         '200':
-          description: List of organizations retrieved successfully
+          description: List of organisations retrieved successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  organizations:
+                  organisations:
                     type: array
                     items:
                       $ref: '#/components/schemas/PartnerOrgResponse'
                   totalCount:
                     type: integer
-                    description: Total number of organizations
+                    description: Total number of organisations
                   hasMore:
                     type: boolean
-                    description: Whether there are more organizations to fetch
+                    description: Whether there are more organisations to fetch
               example:
-                organizations:
+                organisations:
                   - id: "550e8400-e29b-41d4-a716-446655440000"
                     name: "Acme Corporation"
                     email: "contact@acme.com"
@@ -739,19 +739,19 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  # Partner Organization Session Management
+  # CRUD MSP Organisation Session
   /partner/organisation/session/{orgid}:
     post:
-      summary: Create Organization Session
-      description: Creates a new session for a partner organization
+      summary: Create Organisation Session
+      description: Creates a new session for a partner organisation
       operationId: createPartnerOrganisationSession
       tags:
-        - Session Management
+        - Organisation Session Management
       parameters:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
@@ -791,11 +791,11 @@ paths:
 
   /partner/organisation/session/{sessionid}:
     put:
-      summary: Update Organization Session
-      description: Updates an existing organization session
+      summary: Update Organisation Session
+      description: Updates an existing organisation session
       operationId: updatePartnerOrganisationSession
       tags:
-        - Session Management
+        - Organisation Session Management
       parameters:
         - name: sessionid
           in: path
@@ -833,11 +833,11 @@ paths:
           $ref: '#/components/responses/NotFound'
 
     delete:
-      summary: Delete Organization Session
-      description: Deletes an existing organization session
+      summary: Delete Organisation Session
+      description: Deletes an existing organisation session
       operationId: deletePartnerOrganisationSession
       tags:
-        - Session Management
+        - Organisation Session Management
       parameters:
         - name: sessionid
           in: path
@@ -863,11 +863,11 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # Partner Organization Subscription Management
+  # CRUD MSP Organisation Subscription Update and Suspend/Activate
   /partner/organisation/subscription/{orgid}:
     put:
-      summary: Update Organization Subscription
-      description: Updates subscription details for a partner organization
+      summary: Update Organisation Subscription
+      description: Updates subscription details for a partner organisation
       operationId: updatePartnerOrganisationSubscription
       tags:
         - Subscription Management
@@ -875,7 +875,7 @@ paths:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
@@ -910,8 +910,8 @@ paths:
 
   /partner/organisation/suspend/{orgid}:
     put:
-      summary: Suspend Organization
-      description: Suspends a partner organization
+      summary: Suspend Organisation
+      description: Suspends a partner organisation
       operationId: suspendPartnerOrganisation
       tags:
         - Subscription Management
@@ -919,7 +919,7 @@ paths:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
@@ -936,13 +936,13 @@ paths:
               notifyUsers: true
       responses:
         '200':
-          description: Organization suspended successfully
+          description: Organisation suspended successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessMessage'
               example:
-                message: "Organization suspended successfully"
+                message: "Organisation suspended successfully"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -952,8 +952,8 @@ paths:
 
   /partner/organisation/activate/{orgid}:
     put:
-      summary: Activate Organization
-      description: Activates a suspended partner organization
+      summary: Activate Organisation
+      description: Activates a suspended partner organisation
       operationId: activatePartnerOrganisation
       tags:
         - Subscription Management
@@ -961,20 +961,20 @@ paths:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
             example: "550e8400-e29b-41d4-a716-446655440000"
       responses:
         '200':
-          description: Organization activated successfully
+          description: Organisation activated successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessMessage'
               example:
-                message: "Organization activated successfully"
+                message: "Organisation activated successfully"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -982,7 +982,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # Partner Usage and Billing
+  # CRUD MSP Usage
   /partner/usage:
     get:
       summary: Get Partner Billing Usage
@@ -1034,10 +1034,11 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  # CRUD MSP Organisation Usage
   /partner/usage/{orgid}:
     get:
-      summary: Get Organization Usage
-      description: Retrieves usage information for a specific organization
+      summary: Get Organisation Usage
+      description: Retrieves usage information for a specific organisation
       operationId: getPartnerOrgUsage
       tags:
         - Billing & Usage
@@ -1045,7 +1046,7 @@ paths:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
@@ -1066,7 +1067,7 @@ paths:
             example: "2024-01-31"
       responses:
         '200':
-          description: Organization usage retrieved successfully
+          description: Organisation usage retrieved successfully
           content:
             application/json:
               schema:
@@ -1089,7 +1090,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # Partner Token Management
+  # CRUD MSP Token
   /partner/token:
     post:
       summary: Generate Partner Session Token
@@ -1107,7 +1108,7 @@ paths:
               tokenType: "access"
               expiresIn: 3600
               scope: ["read", "write"]
-              organizationId: "550e8400-e29b-41d4-a716-446655440000"
+              organisationId: "550e8400-e29b-41d4-a716-446655440000"
       responses:
         '200':
           description: Token generated successfully
@@ -1126,11 +1127,11 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  # Partner Organization Gateway Management
+  # CRUD MSP Organisation Gateway
   /partner/organisation/gateway/{orgid}:
     post:
-      summary: Create Organization Gateway
-      description: Creates a new gateway for a partner organization
+      summary: Create Organisation Gateway
+      description: Creates a new gateway for a partner organisation
       operationId: createPartnerOrgCGW
       tags:
         - Gateway Management
@@ -1138,7 +1139,7 @@ paths:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
@@ -1181,8 +1182,8 @@ paths:
           $ref: '#/components/responses/NotFound'
 
     get:
-      summary: Get All Organization Gateways
-      description: Retrieves all gateways for a partner organization
+      summary: Get All Organisation Gateways
+      description: Retrieves all gateways for a partner organisation
       operationId: getPartnerOrgAllCGW
       tags:
         - Gateway Management
@@ -1190,7 +1191,7 @@ paths:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
@@ -1253,7 +1254,7 @@ paths:
 
   /partner/organisation/gateway/{orgid}/{cgwid}:
     get:
-      summary: Get Organization Gateway
+      summary: Get Organisation Gateway
       description: Retrieves details of a specific gateway
       operationId: getPartnerOrgCGW
       tags:
@@ -1262,7 +1263,7 @@ paths:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
@@ -1299,7 +1300,7 @@ paths:
           $ref: '#/components/responses/NotFound'
 
     put:
-      summary: Update Organization Gateway
+      summary: Update Organisation Gateway
       description: Updates an existing gateway
       operationId: updatePartnerOrgCGW
       tags:
@@ -1308,7 +1309,7 @@ paths:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
@@ -1352,7 +1353,7 @@ paths:
           $ref: '#/components/responses/NotFound'
 
     delete:
-      summary: Delete Organization Gateway
+      summary: Delete Organisation Gateway
       description: Deletes an existing gateway
       operationId: deletePartnerOrgCGW
       tags:
@@ -1361,7 +1362,7 @@ paths:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
@@ -1390,7 +1391,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  # Gateway Session Management
+  # CRUD MSP Organisation Gateway Session
   /partner/organisation/gateway/session/{orgid}/{cgwid}:
     post:
       summary: Create Gateway Session
@@ -1402,7 +1403,7 @@ paths:
         - name: orgid
           in: path
           required: true
-          description: Unique identifier of the organization
+          description: Unique identifier of the organisation
           schema:
             type: string
             format: uuid
@@ -1749,7 +1750,7 @@ components:
           type: string
           description: Updated department
 
-    # Partner Organization Schemas
+    # Partner Organisation Schemas
     CreatePartnerOrgRequest:
       type: object
       required:
@@ -1760,20 +1761,20 @@ components:
       properties:
         name:
           type: string
-          description: Organization name
+          description: Organisation name
           example: "Acme Corporation"
         email:
           type: string
           format: email
-          description: Organization contact email
+          description: Organisation contact email
           example: "contact@acme.com"
         phone:
           type: string
-          description: Organization phone number
+          description: Organisation phone number
           example: "+1234567890"
         address:
           type: string
-          description: Organization address
+          description: Organisation address
           example: "123 Business St, City, State 12345"
         contactPerson:
           type: string
@@ -1781,12 +1782,12 @@ components:
           example: "John Doe"
         industry:
           type: string
-          description: Organization industry
+          description: Organisation industry
           example: "Technology"
         size:
           type: string
           enum: ["startup", "small", "medium", "enterprise"]
-          description: Organization size
+          description: Organisation size
           example: "Enterprise"
 
     PartnerOrgResponse:
@@ -1795,33 +1796,33 @@ components:
         id:
           type: string
           format: uuid
-          description: Unique organization identifier
+          description: Unique organisation identifier
         name:
           type: string
-          description: Organization name
+          description: Organisation name
         email:
           type: string
           format: email
-          description: Organization email
+          description: Organisation email
         phone:
           type: string
-          description: Organization phone
+          description: Organisation phone
         address:
           type: string
-          description: Organization address
+          description: Organisation address
         contactPerson:
           type: string
           description: Primary contact person
         industry:
           type: string
-          description: Organization industry
+          description: Organisation industry
         size:
           type: string
-          description: Organization size
+          description: Organisation size
         status:
           type: string
           enum: ["active", "suspended", "inactive"]
-          description: Organization status
+          description: Organisation status
         createdAt:
           type: string
           format: date-time
@@ -1836,27 +1837,27 @@ components:
       properties:
         name:
           type: string
-          description: Updated organization name
+          description: Updated organisation name
         email:
           type: string
           format: email
-          description: Updated organization email
+          description: Updated organisation email
         phone:
           type: string
-          description: Updated organization phone
+          description: Updated organisation phone
         address:
           type: string
-          description: Updated organization address
+          description: Updated organisation address
         contactPerson:
           type: string
           description: Updated primary contact person
         industry:
           type: string
-          description: Updated organization industry
+          description: Updated organisation industry
         size:
           type: string
           enum: ["startup", "small", "medium", "enterprise"]
-          description: Updated organization size
+          description: Updated organisation size
 
     # Session Management Schemas
     CreateSessionRequest:
@@ -2021,10 +2022,10 @@ components:
         orgId:
           type: string
           format: uuid
-          description: Organization ID
+          description: Organisation ID
         orgName:
           type: string
-          description: Organization name
+          description: Organisation name
         totalUsage:
           type: number
           format: float
@@ -2067,10 +2068,10 @@ components:
             type: string
           description: Token scopes
           example: ["read", "write"]
-        organizationId:
+        organisationId:
           type: string
           format: uuid
-          description: Associated organization ID
+          description: Associated organisation ID
           example: "550e8400-e29b-41d4-a716-446655440000"
 
     TokenResponse:
@@ -2158,7 +2159,7 @@ components:
         orgId:
           type: string
           format: uuid
-          description: Associated organization ID
+          description: Associated organisation ID
         createdAt:
           type: string
           format: date-time
@@ -2324,17 +2325,17 @@ tags:
     description: Operations for managing Member Service Providers
   - name: MSP User Management
     description: Operations for managing users within MSPs
-  - name: Partner Organization Management
-    description: Operations for managing partner organizations
-  - name: Session Management
-    description: Operations for managing organization sessions
+  - name: Partner Organisation Management
+    description: Operations for managing partner organisations
+  - name: Organisation Session Management
+    description: Operations for managing organisation sessions
   - name: Subscription Management
-    description: Operations for managing subscriptions and organization status
+    description: Operations for managing subscriptions and organisation status
   - name: Billing & Usage
     description: Operations for billing and usage tracking
   - name: Token Management
     description: Operations for generating and managing tokens
   - name: Gateway Management
-    description: Operations for managing organization gateways
+    description: Operations for managing organisation gateways
   - name: Gateway Session Management
     description: Operations for managing gateway sessions
