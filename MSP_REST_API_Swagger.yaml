@@ -186,7 +186,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreatePartnerUserReq'
+                $ref: '#/components/schemas/CreatePartnerUserResp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -470,7 +470,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PartnerOrgSessionRequest'
+              $ref: '#/components/schemas/GatewaySessionRequest'
       responses:
         '200':
           description: Session updated successfully
@@ -526,7 +526,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PartnerOrgSubRequest'
+              $ref: '#/components/schemas/PartnerOrgSubUpdateRequest'
       responses:
         '200':
           description: Subscription updated successfully
@@ -810,7 +810,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PartnerOrgSessionRequest'
+              $ref: '#/components/schemas/GatewaySessionRequest'
       responses:
         '200':
           description: Gateway session created successfully
@@ -840,7 +840,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PartnerOrgSessionRequest'
+              $ref: '#/components/schemas/GatewaySessionRequest'
       responses:
         '200':
           description: Gateway session updated successfully
@@ -1035,11 +1035,6 @@ components:
         - email
         - role
       properties:
-        id:
-          type: string
-          format: uuid
-          description: User ID (returned after creation)
-          example: "123e4567-e89b-12d3-a456-426614174000"
         firstName:
           type: string
           description: User first name
@@ -1069,6 +1064,11 @@ components:
     CreatePartnerUserResp:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
+          description: User ID
+          example: "123e4567-e89b-12d3-a456-426614174000"
         firstName:
           type: string
           description: User first name
@@ -1221,6 +1221,17 @@ components:
             - light
             - dark
 
+    GatewaySessionRequest:
+      type: object
+      properties:
+        theme:
+          type: string
+          description: UI theme preference
+          example: "dark"
+          enum:
+            - light
+            - dark
+
     PartnerOrgSessionResponse:
       type: object
       properties:
@@ -1236,6 +1247,27 @@ components:
           example: "123e4567-e89b-12d3-a456-426614174002"
 
     # ==================== Subscription Schemas ====================
+    PartnerOrgSubUpdateRequest:
+      type: object
+      required:
+        - sase
+      properties:
+        state:
+          type: string
+          description: Subscription state
+          example: "active"
+          enum:
+            - active
+            - suspended
+            - trial
+        sase:
+          type: string
+          description: SASE tier
+          example: "pro"
+          enum:
+            - essentials
+            - pro
+
     PartnerOrgSubRequest:
       type: object
       required:
@@ -1299,6 +1331,51 @@ components:
           example: false
 
     # ==================== Usage Schemas ====================
+    PartnerOrgUsageData:
+      type: object
+      required:
+        - numofusers
+        - numofgateways
+        - sase
+      properties:
+        state:
+          type: string
+          description: Subscription state
+          example: "active"
+          enum:
+            - active
+            - suspended
+            - trial
+        numofusers:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of users
+          example: 100
+        numofgateways:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of gateways
+          example: 5
+        totaluserscost:
+          type: number
+          format: double
+          description: Total cost for users
+          example: 1000.00
+        totalgwscost:
+          type: number
+          format: double
+          description: Total cost for gateways
+          example: 500.00
+        sase:
+          type: string
+          description: SASE tier
+          example: "pro"
+          enum:
+            - essentials
+            - pro
+
     PartnerOrgsUsage:
       type: object
       properties:
@@ -1316,7 +1393,7 @@ components:
           description: Account ID
           example: "ACC-67890"
         usage:
-          $ref: '#/components/schemas/PartnerOrgSubRequest'
+          $ref: '#/components/schemas/PartnerOrgUsageData'
 
     # ==================== Token Schemas ====================
     PartnerToken:
@@ -1446,15 +1523,6 @@ components:
     PartnerOrgCGWInfo:
       type: object
       properties:
-        cgwTag:
-          type: string
-          description: Gateway tag/name
-          example: "gateway-sf-01"
-        cgwID:
-          type: string
-          format: uuid
-          description: Gateway ID
-          example: "123e4567-e89b-12d3-a456-426614174003"
         deviceName:
           type: string
           description: Gateway device name
