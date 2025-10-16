@@ -23,15 +23,15 @@ tags:
     description: MSP user management operations
   - name: Partner Tokens
     description: Partner session token management
-  - name: Partner Organizations
+  - name: Partner Organisations
     description: Partner organization management operations
-  - name: Organization Subscriptions
+  - name: Organisation Subscriptions
     description: Partner organization subscription management
   - name: Usage & Billing
     description: Usage and billing information
-  - name: Organization Sessions
+  - name: Organisation Sessions
     description: Partner organization session management
-  - name: Organization Gateways
+  - name: Organisation Gateways
     description: Partner organization gateway (CGW) management
   - name: Gateway Sessions
     description: Partner organization gateway session management
@@ -322,7 +322,7 @@ paths:
   /partner/organisation:
     post:
       tags:
-        - Partner Organizations
+        - Partner Organisations
       summary: Create partner organization
       description: Creates a new organization under a partner
       operationId: createPartnerOrganisation
@@ -349,7 +349,7 @@ paths:
   /partner/organisations:
     get:
       tags:
-        - Partner Organizations
+        - Partner Organisations
       summary: Get all partner organizations
       description: Retrieves all organizations under the current partner
       operationId: getPartnerAllOrganisations
@@ -370,7 +370,7 @@ paths:
   /partner/organisation/{orgid}:
     get:
       tags:
-        - Partner Organizations
+        - Partner Organisations
       summary: Get partner organization by ID
       description: Retrieves a specific organization by its ID
       operationId: getPartnerOrganisation
@@ -394,7 +394,7 @@ paths:
     
     put:
       tags:
-        - Partner Organizations
+        - Partner Organisations
       summary: Update partner organization
       description: Updates an existing organization's information
       operationId: updatePartnerOrganisation
@@ -424,7 +424,7 @@ paths:
     
     delete:
       tags:
-        - Partner Organizations
+        - Partner Organisations
       summary: Delete partner organization
       description: Deletes an existing organization
       operationId: deletePartnerOrganisation
@@ -450,7 +450,7 @@ paths:
   /partner/organisation/subscription/{orgid}:
     put:
       tags:
-        - Organization Subscriptions
+        - Organisation Subscriptions
       summary: Update partner organization subscription
       description: Updates the subscription details for an organization
       operationId: updatePartnerOrganisationSubscription
@@ -481,7 +481,7 @@ paths:
   /partner/organisation/suspend/{orgid}:
     put:
       tags:
-        - Organization Subscriptions
+        - Organisation Subscriptions
       summary: Suspend partner organization
       description: Suspends an organization's services
       operationId: suspendPartnerOrganisation
@@ -506,7 +506,7 @@ paths:
   /partner/organisation/activate/{orgid}:
     put:
       tags:
-        - Organization Subscriptions
+        - Organisation Subscriptions
       summary: Activate partner organization
       description: Activates a suspended organization's services
       operationId: activatePartnerOrganisation
@@ -579,7 +579,7 @@ paths:
   /partner/organisation/session/{orgid}:
     post:
       tags:
-        - Organization Sessions
+        - Organisation Sessions
       summary: Create partner organization session
       description: Creates a new session for accessing a partner organization
       operationId: createPartnerOrganisationSession
@@ -608,7 +608,7 @@ paths:
   /partner/organisation/session/{sessionid}:
     put:
       tags:
-        - Organization Sessions
+        - Organisation Sessions
       summary: Update partner organization session
       description: Updates an existing organization session
       operationId: updatePartnerOrganisationSession
@@ -638,7 +638,7 @@ paths:
     
     delete:
       tags:
-        - Organization Sessions
+        - Organisation Sessions
       summary: Delete partner organization session
       description: Deletes an existing organization session
       operationId: deletePartnerOrganisationSession
@@ -664,7 +664,7 @@ paths:
   /partner/organisation/gateway/{orgid}:
     post:
       tags:
-        - Organization Gateways
+        - Organisation Gateways
       summary: Create partner organization gateway
       description: Creates a new gateway (CGW) for an organization
       operationId: createPartnerOrgCGW
@@ -692,7 +692,7 @@ paths:
     
     get:
       tags:
-        - Organization Gateways
+        - Organisation Gateways
       summary: Get all partner organization gateways
       description: Retrieves all gateways for a specific organization
       operationId: getPartnerOrgAllCGW
@@ -715,7 +715,7 @@ paths:
   /partner/organisation/gateway/{orgid}/{cgwid}:
     get:
       tags:
-        - Organization Gateways
+        - Organisation Gateways
       summary: Get partner organization gateway by ID
       description: Retrieves a specific gateway by its ID
       operationId: getPartnerOrgCGW
@@ -740,7 +740,7 @@ paths:
     
     put:
       tags:
-        - Organization Gateways
+        - Organisation Gateways
       summary: Update partner organization gateway
       description: Updates an existing gateway's configuration
       operationId: updatePartnerOrgCGW
@@ -771,7 +771,7 @@ paths:
     
     delete:
       tags:
-        - Organization Gateways
+        - Organisation Gateways
       summary: Delete partner organization gateway
       description: Deletes an existing gateway
       operationId: deletePartnerOrgCGW
