@@ -1,52 +1,56 @@
 openapi: 3.0.3
 info:
-  title: MSP REST API
-  description: |
-    REST API for managing Member Service Providers (MSPs), Partner Organizations, 
-    Gateways, Users, Sessions, and Billing. All endpoints require session-based authentication 
-    using X-Auth-Token header.
+  title: Partner Organization Management API
+  description: API for managing MSP (Managed Service Provider) partners, organizations, users, gateways, and subscriptions
   version: 1.0.0
   contact:
     name: API Support
-    email: support@exium.net
-  license:
-    name: Proprietary
-    url: https://exium.net/license
+    email: support@example.com
 
 servers:
-  - url: https://api.exium.net/api/v1/partner-org
+  - url: https://api.example.com/v1
     description: Production server
-  - url: https://staging-api.exium.net/api/v1/partner-org
+  - url: https://api-staging.example.com/v1
     description: Staging server
 
 security:
   - SessionAuth: []
 
+tags:
+  - name: MSP
+    description: MSP (Managed Service Provider) management operations
+  - name: MSP Users
+    description: MSP user management operations
+  - name: Partner Organizations
+    description: Partner organization management operations
+  - name: Organization Sessions
+    description: Partner organization session management
+  - name: Organization Subscriptions
+    description: Partner organization subscription management
+  - name: Usage & Billing
+    description: Usage and billing information
+  - name: Partner Tokens
+    description: Partner session token management
+  - name: Organization Gateways
+    description: Partner organization gateway (CGW) management
+  - name: Gateway Sessions
+    description: Partner organization gateway session management
+
 paths:
-  # CRUD MSP
+  # ==================== MSP CRUD ====================
   /msp:
     post:
-      summary: Create MSP
-      description: Creates a new Member Service Provider (MSP) under the current partner organization
-      operationId: createMSP
       tags:
-        - MSP Management
+        - MSP
+      summary: Create a new MSP
+      description: Creates a new Managed Service Provider under the current partner
+      operationId: createMSP
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/CreatePartnerInfoReq'
-            example:
-              email: "contact@example.com"
-              name: "Example MSP"
-              phone: "+1234567890"
-              firstName: "John"
-              lastName: "Doe"
-              addressCity: "New York"
-              addressPostcode: "10001"
-              addressCountry: "USA"
-              addressStateOrProvince: "NY"
       responses:
         '200':
           description: MSP created successfully
@@ -54,29 +58,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreatePartnerInfoRsp'
-              example:
-                partnerName: "example_msp"
-                partnerID: "550e8400-e29b-41d4-a716-446655440000"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '409':
-          description: MSP with the same name already exists
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: "PARTNER_ALREADY_EXISTS"
-                message: "Partner with this name already exists"
-
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
     get:
-      summary: Get All MSPs
-      description: Retrieves a list of all MSPs associated with the current partner
-      operationId: getAllMSP
       tags:
-        - MSP Management
+        - MSP
+      summary: Get all MSPs
+      description: Retrieves all MSPs under the current partner
+      operationId: getAllMSP
       responses:
         '200':
           description: List of MSPs retrieved successfully
@@ -86,207 +80,128 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CreatePartnerInfoReq'
-              example:
-                - name: "Example MSP 1"
-                  email: "contact1@example.com"
-                  phone: "+1234567890"
-                  firstName: "John"
-                  lastName: "Doe"
-                  addressCity: "New York"
-                  addressPostcode: "10001"
-                  addressCountry: "USA"
-                  addressStateOrProvince: "NY"
-                - name: "Example MSP 2"
-                  email: "contact2@example.com"
-                  phone: "+1234567891"
-                  firstName: "Jane"
-                  lastName: "Smith"
-                  addressCity: "Los Angeles"
-                  addressPostcode: "90210"
-                  addressCountry: "USA"
-                  addressStateOrProvince: "CA"
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /msp/{mspid}:
     get:
-      summary: Get MSP
-      description: Retrieves details of a specific MSP by ID
-      operationId: getMSP
       tags:
-        - MSP Management
+        - MSP
+      summary: Get MSP by ID
+      description: Retrieves a specific MSP by its ID
+      operationId: getMSP
       parameters:
-        - name: mspid
-          in: path
-          required: true
-          description: Unique identifier of the MSP
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
+        - $ref: '#/components/parameters/MspId'
       responses:
         '200':
-          description: MSP details retrieved successfully
+          description: MSP retrieved successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreatePartnerInfoReq'
-              example:
-                name: "Example MSP"
-                email: "contact@example.com"
-                phone: "+1234567890"
-                firstName: "John"
-                lastName: "Doe"
-                addressCity: "New York"
-                addressPostcode: "10001"
-                addressCountry: "USA"
-                addressStateOrProvince: "NY"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
     put:
+      tags:
+        - MSP
       summary: Update MSP
       description: Updates an existing MSP's information
       operationId: updateMSP
-      tags:
-        - MSP Management
       parameters:
-        - name: mspid
-          in: path
-          required: true
-          description: Unique identifier of the MSP to update
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
+        - $ref: '#/components/parameters/MspId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdatePartnerInfoReq'
-            example:
-              name: "Updated MSP Name"
-              phone: "+1234567890"
-              addressCity: "Updated City"
-              addressPostcode: "10002"
-              addressCountry: "USA"
-              addressStateOrProvince: "NY"
       responses:
         '200':
           description: MSP updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "MSP updated successfully"
+                $ref: '#/components/schemas/UpdatePartnerInfoReq'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
     delete:
+      tags:
+        - MSP
       summary: Delete MSP
       description: Deletes an existing MSP
       operationId: deleteMSP
-      tags:
-        - MSP Management
       parameters:
-        - name: mspid
-          in: path
-          required: true
-          description: Unique identifier of the MSP to delete
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
+        - $ref: '#/components/parameters/MspId'
       responses:
         '200':
           description: MSP deleted successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "MSP deleted successfully"
+                $ref: '#/components/schemas/StatusCodeRsp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
-  # CRUD MSP User
+  # ==================== MSP User CRUD ====================
   /msp/user/{mspid}:
     post:
-      summary: Create MSP User
+      tags:
+        - MSP Users
+      summary: Create MSP user
       description: Creates a new user for a specific MSP
       operationId: createMSPUser
-      tags:
-        - MSP User Management
       parameters:
-        - name: mspid
-          in: path
-          required: true
-          description: Unique identifier of the MSP
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
+        - $ref: '#/components/parameters/MspId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/CreatePartnerUserReq'
-            example:
-              firstName: "John"
-              lastName: "Doe"
-              email: "john.doe@example.com"
-              phone: "+1234567890"
-              role: "admin"
       responses:
         '200':
           description: MSP user created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreatePartnerUserResp'
-              example:
-                firstName: "John"
-                lastName: "Doe"
-                email: "john.doe@example.com"
-                phone: "+1234567890"
-                role: "admin"
+                $ref: '#/components/schemas/CreatePartnerUserReq'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
     get:
-      summary: Get All MSP Users
-      description: Retrieves a list of all users for a specific MSP
-      operationId: getMSPAllUsers
       tags:
-        - MSP User Management
+        - MSP Users
+      summary: Get all MSP users
+      description: Retrieves all users for a specific MSP
+      operationId: getMSPAllUsers
       parameters:
-        - name: mspid
-          in: path
-          required: true
-          description: Unique identifier of the MSP
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
+        - $ref: '#/components/parameters/MspId'
       responses:
         '200':
           description: List of MSP users retrieved successfully
@@ -296,377 +211,237 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CreatePartnerUserResp'
-              example:
-                - firstName: "John"
-                  lastName: "Doe"
-                  email: "john.doe@example.com"
-                  phone: "+1234567890"
-                  role: "admin"
-                - firstName: "Jane"
-                  lastName: "Smith"
-                  email: "jane.smith@example.com"
-                  phone: "+1234567891"
-                  role: "user"
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /msp/user/{mspid}/{id}:
     get:
-      summary: Get MSP User
-      description: Retrieves details of a specific user within an MSP
-      operationId: getMSPUser
       tags:
-        - MSP User Management
+        - MSP Users
+      summary: Get MSP user by ID
+      description: Retrieves a specific user from an MSP
+      operationId: getMSPUser
       parameters:
-        - name: mspid
-          in: path
-          required: true
-          description: Unique identifier of the MSP
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
-        - name: id
-          in: path
-          required: true
-          description: Unique identifier of the user
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440001"
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/UserId'
       responses:
         '200':
-          description: MSP user details retrieved successfully
+          description: MSP user retrieved successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreatePartnerUserResp'
-              example:
-                firstName: "John"
-                lastName: "Doe"
-                email: "john.doe@example.com"
-                phone: "+1234567890"
-                role: "admin"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
     put:
-      summary: Update MSP User
-      description: Updates an existing user's information within an MSP
-      operationId: updateMSPUser
       tags:
-        - MSP User Management
+        - MSP Users
+      summary: Update MSP user
+      description: Updates an existing MSP user's information
+      operationId: updateMSPUser
       parameters:
-        - name: mspid
-          in: path
-          required: true
-          description: Unique identifier of the MSP
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
-        - name: id
-          in: path
-          required: true
-          description: Unique identifier of the user to update
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440001"
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/UserId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/CreatePartnerUserReq'
-            example:
-              firstName: "John"
-              lastName: "Doe"
-              email: "john.doe.updated@example.com"
-              phone: "+1234567890"
-              role: "admin"
       responses:
         '200':
           description: MSP user updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "User updated successfully"
+                $ref: '#/components/schemas/CreatePartnerUserResp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
     delete:
-      summary: Delete MSP User
-      description: Deletes an existing user from an MSP
-      operationId: deleteMSPUser
       tags:
-        - MSP User Management
+        - MSP Users
+      summary: Delete MSP user
+      description: Deletes an existing MSP user
+      operationId: deleteMSPUser
       parameters:
-        - name: mspid
-          in: path
-          required: true
-          description: Unique identifier of the MSP
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
-        - name: id
-          in: path
-          required: true
-          description: Unique identifier of the user to delete
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440001"
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/UserId'
       responses:
         '200':
           description: MSP user deleted successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "User deleted successfully"
+                $ref: '#/components/schemas/StatusCodeRsp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
-  # CRUD MSP Organisation
+  # ==================== Partner Organisation CRUD ====================
   /partner/organisation:
     post:
-      summary: Create Partner Organisation
-      description: Creates a new partner organisation
-      operationId: createPartnerOrganisation
       tags:
-        - Partner Organisation Management
+        - Partner Organizations
+      summary: Create partner organization
+      description: Creates a new organization under a partner
+      operationId: createPartnerOrganisation
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/PartnerOrgRequest'
-            example:
-              orgFullName: "Acme Corporation"
-              insightID: "insight123"
-              accountID: "account456"
-              notifyEmails: ["admin@acme.com", "support@acme.com"]
-              firstName: "John"
-              lastName: "Doe"
-              userMail: "john.doe@acme.com"
-              phone: "+1234567890"
-              userName: "johndoe"
-              addressCity: "New York"
-              addressPostcode: "10001"
-              addressCountry: "USA"
-              addressStateOrProvince: "NY"
-              instanceSize: "medium"
       responses:
         '200':
-          description: Partner organisation created successfully
+          description: Organization created successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PartnerOrgResponse'
-              example:
-                orgTag: "acme_corp"
-                orgID: "550e8400-e29b-41d4-a716-446655440000"
-                trialExpiry: "2024-02-15T10:30:00Z"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '409':
-          description: Organisation with this name already exists
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              example:
-                errorCode: "ORG_ALREADY_EXISTS"
-                message: "Organisation with this name already exists"
-
-  /partner/organisation/{orgid}:
-    get:
-      summary: Get Partner Organisation
-      description: Retrieves details of a specific partner organisation
-      operationId: getPartnerOrganisation
-      tags:
-        - Partner Organisation Management
-      parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
-      responses:
-        '200':
-          description: Organisation details retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerOrgList'
-              example:
-                orgName: "Acme Corporation"
-                orgTag: "acme_corp"
-                orgID: "550e8400-e29b-41d4-a716-446655440000"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-    put:
-      summary: Update Partner Organisation
-      description: Updates an existing partner organisation
-      operationId: updatePartnerOrganisation
-      tags:
-        - Partner Organisation Management
-      parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PartnerOrgRequest'
-            example:
-              orgFullName: "Updated Acme Corporation"
-              insightID: "insight123"
-              accountID: "account456"
-              notifyEmails: ["admin@acme.com"]
-              firstName: "Jane"
-              lastName: "Smith"
-              userMail: "jane.smith@acme.com"
-              phone: "+1234567891"
-              userName: "janesmith"
-      responses:
-        '200':
-          description: Organisation updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "Organisation updated successfully"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-    delete:
-      summary: Delete Partner Organisation
-      description: Deletes an existing partner organisation
-      operationId: deletePartnerOrganisation
-      tags:
-        - Partner Organisation Management
-      parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
-      responses:
-        '200':
-          description: Organisation deleted successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "Organisation deleted successfully"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /partner/organisations:
     get:
-      summary: Get All Partner Organisations
-      description: Retrieves a list of all partner organisations
-      operationId: getPartnerAllOrganisations
       tags:
-        - Partner Organisation Management
+        - Partner Organizations
+      summary: Get all partner organizations
+      description: Retrieves all organizations under the current partner
+      operationId: getPartnerAllOrganisations
       responses:
         '200':
-          description: List of organisations retrieved successfully
+          description: List of organizations retrieved successfully
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/PartnerOrgList'
-              example:
-                - orgName: "Acme Corporation"
-                  orgTag: "acme_corp"
-                  orgID: "550e8400-e29b-41d4-a716-446655440000"
-                - orgName: "Beta Industries"
-                  orgTag: "beta_ind"
-                  orgID: "550e8400-e29b-41d4-a716-446655440001"
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
-  # CRUD MSP Organisation Session
+  /partner/organisation/{orgid}:
+    get:
+      tags:
+        - Partner Organizations
+      summary: Get partner organization by ID
+      description: Retrieves a specific organization by its ID
+      operationId: getPartnerOrganisation
+      parameters:
+        - $ref: '#/components/parameters/OrgId'
+      responses:
+        '200':
+          description: Organization retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerOrgList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    put:
+      tags:
+        - Partner Organizations
+      summary: Update partner organization
+      description: Updates an existing organization's information
+      operationId: updatePartnerOrganisation
+      parameters:
+        - $ref: '#/components/parameters/OrgId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerOrgRequest'
+      responses:
+        '200':
+          description: Organization updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusCodeRsp'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    delete:
+      tags:
+        - Partner Organizations
+      summary: Delete partner organization
+      description: Deletes an existing organization
+      operationId: deletePartnerOrganisation
+      parameters:
+        - $ref: '#/components/parameters/OrgId'
+      responses:
+        '200':
+          description: Organization deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusCodeRsp'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ==================== Partner Organisation Session ====================
   /partner/organisation/session/{orgid}:
     post:
-      summary: Create Organisation Session
-      description: Creates a new session for a partner organisation
-      operationId: createPartnerOrganisationSession
       tags:
-        - Organisation Session Management
+        - Organization Sessions
+      summary: Create partner organization session
+      description: Creates a new session for accessing a partner organization
+      operationId: createPartnerOrganisationSession
       parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
+        - $ref: '#/components/parameters/OrgId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/PartnerOrgSessionRequest'
-            example:
-              username: "johndoe"
-              rbac: "admin"
-              theme: "dark"
       responses:
         '200':
           description: Session created successfully
@@ -674,318 +449,205 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PartnerOrgSessionResponse'
-              example:
-                redirectURL: "https://dashboard.exium.net/session/abc123"
-                sessionID: "550e8400-e29b-41d4-a716-446655440002"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /partner/organisation/session/{sessionid}:
     put:
-      summary: Update Organisation Session
-      description: Updates an existing organisation session
-      operationId: updatePartnerOrganisationSession
       tags:
-        - Organisation Session Management
+        - Organization Sessions
+      summary: Update partner organization session
+      description: Updates an existing organization session
+      operationId: updatePartnerOrganisationSession
       parameters:
-        - name: sessionid
-          in: path
-          required: true
-          description: Unique identifier of the session
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440002"
+        - $ref: '#/components/parameters/SessionId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/PartnerOrgSessionRequest'
-            example:
-              username: "johndoe"
-              rbac: "admin"
-              theme: "light"
       responses:
         '200':
           description: Session updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "Session updated successfully"
+                $ref: '#/components/schemas/PartnerOrgSessionResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
     delete:
-      summary: Delete Organisation Session
-      description: Deletes an existing organisation session
-      operationId: deletePartnerOrganisationSession
       tags:
-        - Organisation Session Management
+        - Organization Sessions
+      summary: Delete partner organization session
+      description: Deletes an existing organization session
+      operationId: deletePartnerOrganisationSession
       parameters:
-        - name: sessionid
-          in: path
-          required: true
-          description: Unique identifier of the session
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440002"
+        - $ref: '#/components/parameters/SessionId'
       responses:
         '200':
           description: Session deleted successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "Session deleted successfully"
+                $ref: '#/components/schemas/StatusCodeRsp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
-  # CRUD MSP Organisation Subscription Update and Suspend/Activate
+  # ==================== Partner Organisation Subscription ====================
   /partner/organisation/subscription/{orgid}:
     put:
-      summary: Update Organisation Subscription
-      description: Updates subscription details for a partner organisation
-      operationId: updatePartnerOrganisationSubscription
       tags:
-        - Subscription Management
+        - Organization Subscriptions
+      summary: Update partner organization subscription
+      description: Updates the subscription details for an organization
+      operationId: updatePartnerOrganisationSubscription
       parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
+        - $ref: '#/components/parameters/OrgId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/PartnerOrgSubRequest'
-            example:
-              state: "active"
-              numofusers: 100
-              numofgateways: 10
-              totaluserscost: 1000.50
-              totalgwscost: 500.25
-              sase: "pro"
-              xdrdays: 30
-              iam: true
-              gcr: false
       responses:
         '200':
           description: Subscription updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "Subscription updated successfully"
+                $ref: '#/components/schemas/StatusCodeRsp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /partner/organisation/suspend/{orgid}:
     put:
-      summary: Suspend Organisation
-      description: Suspends a partner organisation
-      operationId: suspendPartnerOrganisation
       tags:
-        - Subscription Management
+        - Organization Subscriptions
+      summary: Suspend partner organization
+      description: Suspends an organization's services
+      operationId: suspendPartnerOrganisation
       parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PartnerOrgSubRequest'
-            example:
-              state: "suspended"
-              numofusers: 0
-              numofgateways: 0
-              totaluserscost: 0.0
-              totalgwscost: 0.0
-              sase: "none"
+        - $ref: '#/components/parameters/OrgId'
       responses:
         '200':
-          description: Organisation suspended successfully
+          description: Organization suspended successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "Organisation suspended successfully"
+                $ref: '#/components/schemas/StatusCodeRsp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /partner/organisation/activate/{orgid}:
     put:
-      summary: Activate Organisation
-      description: Activates a suspended partner organisation
-      operationId: activatePartnerOrganisation
       tags:
-        - Subscription Management
+        - Organization Subscriptions
+      summary: Activate partner organization
+      description: Activates a suspended organization's services
+      operationId: activatePartnerOrganisation
       parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PartnerOrgSubRequest'
-            example:
-              state: "active"
-              numofusers: 100
-              numofgateways: 10
-              totaluserscost: 1000.50
-              totalgwscost: 500.25
-              sase: "pro"
+        - $ref: '#/components/parameters/OrgId'
       responses:
         '200':
-          description: Organisation activated successfully
+          description: Organization activated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "Organisation activated successfully"
+                $ref: '#/components/schemas/StatusCodeRsp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
-  # CRUD MSP Usage
+  # ==================== Usage & Billing ====================
   /partner/usage:
     get:
-      summary: Get Partner Billing Usage
-      description: Retrieves billing usage information for the partner
-      operationId: getPartnerBillingUsage
       tags:
-        - Billing & Usage
+        - Usage & Billing
+      summary: Get partner billing usage
+      description: Retrieves billing usage information for all organizations under the partner
+      operationId: getPartnerBillingUsage
       responses:
         '200':
           description: Billing usage retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PartnerOrgsUsage'
-              example:
-                orgID: "550e8400-e29b-41d4-a716-446655440000"
-                insightID: "insight123"
-                accountID: "account456"
-                usage:
-                  state: "active"
-                  numofusers: 100
-                  numofgateways: 10
-                  totaluserscost: 1000.50
-                  totalgwscost: 500.25
-                  sase: "pro"
-        '400':
-          $ref: '#/components/responses/BadRequest'
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartnerOrgsUsage'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
-  # CRUD MSP Organisation Usage
   /partner/usage/{orgid}:
     get:
-      summary: Get Organisation Usage
-      description: Retrieves usage information for a specific organisation
-      operationId: getPartnerOrgUsage
       tags:
-        - Billing & Usage
+        - Usage & Billing
+      summary: Get partner organization usage
+      description: Retrieves usage information for a specific organization
+      operationId: getPartnerOrgUsage
       parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
+        - $ref: '#/components/parameters/OrgId'
       responses:
         '200':
-          description: Organisation usage retrieved successfully
+          description: Organization usage retrieved successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PartnerOrgsUsage'
-              example:
-                orgID: "550e8400-e29b-41d4-a716-446655440000"
-                insightID: "insight123"
-                accountID: "account456"
-                usage:
-                  state: "active"
-                  numofusers: 50
-                  numofgateways: 5
-                  totaluserscost: 500.25
-                  totalgwscost: 250.10
-                  sase: "pro"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
-  # CRUD MSP Token
+  # ==================== Partner Token ====================
   /partner/token:
     post:
-      summary: Generate Partner Session Token
-      description: Generates a new session token for the partner
-      operationId: generatePartnerSessionToken
       tags:
-        - Token Management
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PartnerToken'
-            example:
-              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-              expiryDate: "2024-02-15T10:30:00Z"
+        - Partner Tokens
+      summary: Generate partner session token
+      description: Generates a new session token for partner authentication
+      operationId: generatePartnerSessionToken
       responses:
         '200':
           description: Token generated successfully
@@ -993,50 +655,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PartnerToken'
-              example:
-                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                expiryDate: "2024-02-15T10:30:00Z"
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
-  # CRUD MSP Organisation Gateway
+  # ==================== Partner Organisation Gateway ====================
   /partner/organisation/gateway/{orgid}:
     post:
-      summary: Create Organisation Gateway
-      description: Creates a new gateway for a partner organisation
-      operationId: createPartnerOrgCGW
       tags:
-        - Gateway Management
+        - Organization Gateways
+      summary: Create partner organization gateway
+      description: Creates a new gateway (CGW) for an organization
+      operationId: createPartnerOrgCGW
       parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
+        - $ref: '#/components/parameters/OrgId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/PartnerOrgCGWCreateReq'
-            example:
-              deviceName: "Main Office Gateway"
-              Location: "New York Office"
-              isIpsecEnabled: true
-              lanSubnets:
-                - subnet: "192.168.1.0/24"
-                  gateway: "192.168.1.1"
-                  interface: "eth0"
-                  vlanid: 100
-              vlanSubnets:
-                - subnet: "10.0.1.0/24"
-                  gateway: "10.0.1.1"
-                  vlanid: 200
       responses:
         '200':
           description: Gateway created successfully
@@ -1044,227 +683,134 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PartnerOrgCGWCreateRsp'
-              example:
-                cgwTag: "main_office_gw"
-                cgwID: "550e8400-e29b-41d4-a716-446655440003"
-                authToken: "gateway_auth_token_123"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
     get:
-      summary: Get All Organisation Gateways
-      description: Retrieves all gateways for a partner organisation
-      operationId: getPartnerOrgAllCGW
       tags:
-        - Gateway Management
+        - Organization Gateways
+      summary: Get all partner organization gateways
+      description: Retrieves all gateways for a specific organization
+      operationId: getPartnerOrgAllCGW
       parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
+        - $ref: '#/components/parameters/OrgId'
       responses:
         '200':
-          description: Gateways retrieved successfully
+          description: List of gateways retrieved successfully
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/PartnerOrgCGWCreateRsp'
-              example:
-                - cgwTag: "main_office_gw"
-                  cgwID: "550e8400-e29b-41d4-a716-446655440003"
-                  authToken: "gateway_auth_token_123"
-                - cgwTag: "branch_office_gw"
-                  cgwID: "550e8400-e29b-41d4-a716-446655440004"
-                  authToken: "gateway_auth_token_456"
-        '400':
-          $ref: '#/components/responses/BadRequest'
+                  $ref: '#/components/schemas/PartnerOrgCGWInfo'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /partner/organisation/gateway/{orgid}/{cgwid}:
     get:
-      summary: Get Organisation Gateway
-      description: Retrieves details of a specific gateway
-      operationId: getPartnerOrgCGW
       tags:
-        - Gateway Management
+        - Organization Gateways
+      summary: Get partner organization gateway by ID
+      description: Retrieves a specific gateway by its ID
+      operationId: getPartnerOrgCGW
       parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
-        - name: cgwid
-          in: path
-          required: true
-          description: Unique identifier of the gateway
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440003"
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/CgwId'
       responses:
         '200':
-          description: Gateway details retrieved successfully
+          description: Gateway retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PartnerOrgCGWCreateRsp'
-              example:
-                cgwTag: "main_office_gw"
-                cgwID: "550e8400-e29b-41d4-a716-446655440003"
-                authToken: "gateway_auth_token_123"
+                $ref: '#/components/schemas/PartnerOrgCGWInfo'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
     put:
-      summary: Update Organisation Gateway
-      description: Updates an existing gateway
-      operationId: updatePartnerOrgCGW
       tags:
-        - Gateway Management
+        - Organization Gateways
+      summary: Update partner organization gateway
+      description: Updates an existing gateway's configuration
+      operationId: updatePartnerOrgCGW
       parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
-        - name: cgwid
-          in: path
-          required: true
-          description: Unique identifier of the gateway
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440003"
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/CgwId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/PartnerOrgCGWUpdateReq'
-            example:
-              isIpsecEnabled: false
-              lanSubnets:
-                - subnet: "192.168.2.0/24"
-                  gateway: "192.168.2.1"
-                  interface: "eth1"
-                  vlanid: 101
-              vlanSubnets:
-                - subnet: "10.0.2.0/24"
-                  gateway: "10.0.2.1"
-                  vlanid: 201
       responses:
         '200':
           description: Gateway updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "Gateway updated successfully"
+                $ref: '#/components/schemas/StatusCodeRsp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
     delete:
-      summary: Delete Organisation Gateway
+      tags:
+        - Organization Gateways
+      summary: Delete partner organization gateway
       description: Deletes an existing gateway
       operationId: deletePartnerOrgCGW
-      tags:
-        - Gateway Management
       parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
-        - name: cgwid
-          in: path
-          required: true
-          description: Unique identifier of the gateway
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440003"
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/CgwId'
       responses:
         '200':
           description: Gateway deleted successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "Gateway deleted successfully"
+                $ref: '#/components/schemas/StatusCodeRsp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
-  # CRUD MSP Organisation Gateway Session
+  # ==================== Partner Organisation Gateway Session ====================
   /partner/organisation/gateway/session/{orgid}/{cgwid}:
     post:
-      summary: Create Gateway Session
-      description: Creates a new session for a gateway
-      operationId: createPartnerOrgCgwSession
       tags:
-        - Gateway Session Management
+        - Gateway Sessions
+      summary: Create partner organization gateway session
+      description: Creates a new session for accessing an organization's gateway
+      operationId: createPartnerOrgCgwSession
       parameters:
-        - name: orgid
-          in: path
-          required: true
-          description: Unique identifier of the organisation
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440000"
-        - name: cgwid
-          in: path
-          required: true
-          description: Unique identifier of the gateway
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440003"
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/CgwId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/PartnerOrgSessionRequest'
-            example:
-              username: "gateway_admin"
-              rbac: "admin"
-              theme: "default"
       responses:
         '200':
           description: Gateway session created successfully
@@ -1272,157 +818,168 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PartnerOrgSessionResponse'
-              example:
-                redirectURL: "https://gateway.exium.net/session/xyz789"
-                sessionID: "550e8400-e29b-41d4-a716-446655440005"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /partner/organisation/gateway/session/{sessionid}/{cgwid}:
     put:
-      summary: Update Gateway Session
-      description: Updates an existing gateway session
-      operationId: updatePartnerOrgCgwSession
       tags:
-        - Gateway Session Management
+        - Gateway Sessions
+      summary: Update partner organization gateway session
+      description: Updates an existing gateway session
+      operationId: updatePartnerOrganisationGatewaySession
       parameters:
-        - name: sessionid
-          in: path
-          required: true
-          description: Unique identifier of the session
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440005"
-        - name: cgwid
-          in: path
-          required: true
-          description: Unique identifier of the gateway
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440003"
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/CgwId'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/PartnerOrgSessionRequest'
-            example:
-              username: "gateway_admin"
-              rbac: "admin"
-              theme: "dark"
       responses:
         '200':
           description: Gateway session updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "Gateway session updated successfully"
+                $ref: '#/components/schemas/PartnerOrgSessionResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
     delete:
-      summary: Delete Gateway Session
-      description: Deletes an existing gateway session
-      operationId: deletePartnerOrgCgwSession
       tags:
-        - Gateway Session Management
+        - Gateway Sessions
+      summary: Delete partner organization gateway session
+      description: Deletes an existing gateway session
+      operationId: deletePartnerOrganisationGatewaySession
       parameters:
-        - name: sessionid
-          in: path
-          required: true
-          description: Unique identifier of the session
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440005"
-        - name: cgwid
-          in: path
-          required: true
-          description: Unique identifier of the gateway
-          schema:
-            type: string
-            format: uuid
-            example: "550e8400-e29b-41d4-a716-446655440003"
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/CgwId'
       responses:
         '200':
           description: Gateway session deleted successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessMessage'
-              example:
-                message: "Gateway session deleted successfully"
+                $ref: '#/components/schemas/StatusCodeRsp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
+# ==================== Components ====================
 components:
   securitySchemes:
     SessionAuth:
       type: apiKey
       in: header
       name: X-Auth-Token
-      description: Session-based authentication token
+      description: Session token obtained after authentication
+
+  parameters:
+    MspId:
+      name: mspid
+      in: path
+      required: true
+      description: MSP identifier
+      schema:
+        type: string
+        format: uuid
+    
+    UserId:
+      name: id
+      in: path
+      required: true
+      description: User identifier
+      schema:
+        type: string
+        format: uuid
+    
+    OrgId:
+      name: orgid
+      in: path
+      required: true
+      description: Organization identifier
+      schema:
+        type: string
+        format: uuid
+    
+    SessionId:
+      name: sessionid
+      in: path
+      required: true
+      description: Session identifier
+      schema:
+        type: string
+        format: uuid
+    
+    CgwId:
+      name: cgwid
+      in: path
+      required: true
+      description: Gateway (CGW) identifier
+      schema:
+        type: string
+        format: uuid
 
   schemas:
-    # MSP Management Schemas (from Go structs)
+    # ==================== MSP Schemas ====================
     CreatePartnerInfoReq:
       type: object
       required:
         - email
         - name
-        - phone
         - firstName
         - lastName
       properties:
         email:
           type: string
           format: email
-          description: Contact email for the MSP
-          example: "contact@example.com"
+          description: MSP email address
+          example: "msp@example.com"
         name:
           type: string
-          description: Name of the MSP organization
+          description: MSP organization name
           example: "Example MSP"
         phone:
           type: string
-          description: Contact phone number
-          example: "+1234567890"
+          description: MSP phone number
+          example: "+1-555-0123"
         firstName:
           type: string
-          description: First name of the contact person
+          description: Primary contact first name
           example: "John"
         lastName:
           type: string
-          description: Last name of the contact person
+          description: Primary contact last name
           example: "Doe"
         addressCity:
           type: string
-          description: City address
+          description: City
           example: "New York"
         addressPostcode:
           type: string
-          description: Postal code
+          description: Postal/ZIP code
           example: "10001"
         addressCountry:
           type: string
           description: Country
-          example: "USA"
+          example: "United States"
         addressStateOrProvince:
           type: string
           description: State or province
@@ -1430,115 +987,111 @@ components:
 
     CreatePartnerInfoRsp:
       type: object
-      required:
-        - partnerName
-        - partnerID
       properties:
         partnerName:
           type: string
-          description: Generated partner name (original name with "msp_" prefix)
-          example: "example_msp"
+          description: Created partner name
+          example: "example-msp"
         partnerID:
           type: string
           format: uuid
-          description: Unique identifier for the created MSP
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          description: Created partner ID
+          example: "123e4567-e89b-12d3-a456-426614174000"
 
     UpdatePartnerInfoReq:
       type: object
-      required:
-        - name
-        - phone
       properties:
         name:
           type: string
-          description: Updated name of the MSP
+          description: MSP organization name
           example: "Updated MSP Name"
         phone:
           type: string
-          description: Updated phone number
-          example: "+1234567890"
+          description: MSP phone number
+          example: "+1-555-0124"
         addressCity:
           type: string
-          description: Updated city
-          example: "Updated City"
+          description: City
+          example: "Los Angeles"
         addressPostcode:
           type: string
-          description: Updated postal code
-          example: "10002"
+          description: Postal/ZIP code
+          example: "90001"
         addressCountry:
           type: string
-          description: Updated country
-          example: "USA"
+          description: Country
+          example: "United States"
         addressStateOrProvince:
           type: string
-          description: Updated state or province
-          example: "NY"
+          description: State or province
+          example: "CA"
 
-    # MSP User Management Schemas (from Go structs)
+    # ==================== MSP User Schemas ====================
     CreatePartnerUserReq:
       type: object
       required:
         - firstName
         - lastName
         - email
-        - phone
         - role
       properties:
         id:
           type: string
           format: uuid
-          description: Unique identifier for the user (generated on creation)
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          description: User ID (returned after creation)
+          example: "123e4567-e89b-12d3-a456-426614174000"
         firstName:
           type: string
-          description: User's first name
-          example: "John"
+          description: User first name
+          example: "Jane"
         lastName:
           type: string
-          description: User's last name
-          example: "Doe"
+          description: User last name
+          example: "Smith"
         email:
           type: string
           format: email
-          description: User's email address
-          example: "john.doe@example.com"
+          description: User email address
+          example: "jane.smith@example.com"
         phone:
           type: string
-          description: User's phone number
-          example: "+1234567890"
+          description: User phone number
+          example: "+1-555-0125"
         role:
           type: string
-          description: User's role
-          enum: ["admin", "user", "idp"]
+          description: User role
           example: "admin"
+          enum:
+            - admin
+            - user
+            - viewer
 
     CreatePartnerUserResp:
       type: object
       properties:
         firstName:
           type: string
-          description: User's first name
-          example: "John"
+          description: User first name
+          example: "Jane"
         lastName:
           type: string
-          description: User's last name
-          example: "Doe"
+          description: User last name
+          example: "Smith"
         email:
           type: string
           format: email
-          description: User's email address
-          example: "john.doe@example.com"
+          description: User email address
+          example: "jane.smith@example.com"
         phone:
           type: string
-          description: User's phone number
-          example: "+1234567890"
+          description: User phone number
+          example: "+1-555-0125"
         role:
           type: string
-          description: User's role
+          description: User role
           example: "admin"
 
-    # Partner Organisation Schemas (from Go structs)
+    # ==================== Partner Organisation Schemas ====================
     PartnerOrgRequest:
       type: object
       required:
@@ -1548,223 +1101,252 @@ components:
       properties:
         orgFullName:
           type: string
-          description: Full name of the organisation
-          example: "Acme Corporation"
+          description: Full name of the organization
+          example: "Example Corporation"
         insightID:
           type: string
-          description: Insight ID for the organisation
-          example: "insight123"
+          description: Insight ID for the organization
+          example: "INS-12345"
         accountID:
           type: string
-          description: Account ID for the organisation
-          example: "account456"
+          description: Account ID for the organization
+          example: "ACC-67890"
         notifyEmails:
           type: array
           items:
             type: string
-          description: List of notification emails
-          example: ["admin@acme.com", "support@acme.com"]
+            format: email
+          description: List of notification email addresses
+          example: ["admin@example.com", "billing@example.com"]
         firstName:
           type: string
-          description: First name of the primary contact
-          example: "John"
+          description: Primary contact first name
+          example: "Alice"
         lastName:
           type: string
-          description: Last name of the primary contact
-          example: "Doe"
+          description: Primary contact last name
+          example: "Johnson"
         userMail:
           type: string
           format: email
           description: Primary contact email
-          example: "john.doe@acme.com"
+          example: "alice.johnson@example.com"
         phone:
           type: string
           description: Contact phone number
-          example: "+1234567890"
+          example: "+1-555-0126"
         userName:
           type: string
           description: Username for the primary contact
-          example: "johndoe"
+          example: "ajohnson"
         addressCity:
           type: string
-          description: City address
-          example: "New York"
+          description: City
+          example: "San Francisco"
         addressPostcode:
           type: string
-          description: Postal code
-          example: "10001"
+          description: Postal/ZIP code
+          example: "94102"
         addressCountry:
           type: string
           description: Country
-          example: "USA"
+          example: "United States"
         addressStateOrProvince:
           type: string
           description: State or province
-          example: "NY"
+          example: "CA"
         instanceSize:
           type: string
-          description: Instance size
+          description: Size of the instance
           example: "medium"
+          enum:
+            - small
+            - medium
+            - large
 
     PartnerOrgResponse:
       type: object
       properties:
         orgTag:
           type: string
-          description: Organisation tag
-          example: "acme_corp"
+          description: Organization tag/name
+          example: "example-corp"
         orgID:
           type: string
           format: uuid
-          description: Unique organisation identifier
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          description: Organization ID
+          example: "123e4567-e89b-12d3-a456-426614174001"
         trialExpiry:
           type: string
           format: date-time
-          description: Trial expiration date
-          example: "2024-02-15T10:30:00Z"
+          description: Trial expiry date
+          example: "2025-12-31T23:59:59Z"
 
     PartnerOrgList:
       type: object
       properties:
         orgName:
           type: string
-          description: Organisation name
-          example: "Acme Corporation"
+          description: Organization name
+          example: "example-corp"
         orgTag:
           type: string
-          description: Organisation tag
-          example: "acme_corp"
+          description: Organization tag
+          example: "example-corp"
         orgID:
           type: string
           format: uuid
-          description: Unique organisation identifier
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          description: Organization ID
+          example: "123e4567-e89b-12d3-a456-426614174001"
 
-    # Session Management Schemas (from Go structs)
+    # ==================== Session Schemas ====================
     PartnerOrgSessionRequest:
       type: object
+      required:
+        - username
       properties:
         username:
           type: string
           description: Username for the session
-          example: "johndoe"
+          example: "ajohnson"
         rbac:
           type: string
-          description: Role-based access control
+          description: Role-based access control setting
           example: "admin"
         theme:
           type: string
           description: UI theme preference
           example: "dark"
+          enum:
+            - light
+            - dark
 
     PartnerOrgSessionResponse:
       type: object
       properties:
         redirectURL:
           type: string
-          description: Redirect URL after session creation
-          example: "https://dashboard.exium.net/session/abc123"
+          format: uri
+          description: URL to redirect after session creation
+          example: "https://portal.example.com/dashboard"
         sessionID:
           type: string
           format: uuid
-          description: Unique session identifier
-          example: "550e8400-e29b-41d4-a716-446655440002"
+          description: Created session ID
+          example: "123e4567-e89b-12d3-a456-426614174002"
 
-    # Subscription Management Schemas (from Go structs)
+    # ==================== Subscription Schemas ====================
     PartnerOrgSubRequest:
       type: object
+      required:
+        - numofusers
+        - numofgateways
+        - sase
       properties:
         state:
           type: string
           description: Subscription state
           example: "active"
+          enum:
+            - active
+            - suspended
+            - trial
         numofusers:
           type: integer
           format: int32
+          minimum: 0
           description: Number of users
           example: 100
         numofgateways:
           type: integer
           format: int32
+          minimum: 0
           description: Number of gateways
-          example: 10
+          example: 5
         totaluserscost:
           type: number
-          format: float
+          format: double
           description: Total cost for users
-          example: 1000.50
+          example: 1000.00
         totalgwscost:
           type: number
-          format: float
+          format: double
           description: Total cost for gateways
-          example: 500.25
+          example: 500.00
         sase:
           type: string
-          description: SASE subscription level
+          description: SASE tier
           example: "pro"
+          enum:
+            - essentials
+            - pro
         xdrdays:
           type: integer
-          description: XDR days
+          description: XDR retention days
           example: 30
+          enum:
+            - 7
+            - 30
+            - 90
+            - 365
         iam:
           type: boolean
-          description: IAM enabled
+          description: IAM feature enabled
           example: true
         gcr:
           type: boolean
-          description: GCR enabled
+          description: GCR feature enabled
           example: false
 
-    # Usage Schemas (from Go structs)
+    # ==================== Usage Schemas ====================
     PartnerOrgsUsage:
       type: object
       properties:
         orgID:
           type: string
           format: uuid
-          description: Organisation ID
-          example: "550e8400-e29b-41d4-a716-446655440000"
+          description: Organization ID
+          example: "123e4567-e89b-12d3-a456-426614174001"
         insightID:
           type: string
           description: Insight ID
-          example: "insight123"
+          example: "INS-12345"
         accountID:
           type: string
           description: Account ID
-          example: "account456"
+          example: "ACC-67890"
         usage:
           $ref: '#/components/schemas/PartnerOrgSubRequest'
 
-    # Token Management Schemas (from Go structs)
+    # ==================== Token Schemas ====================
     PartnerToken:
       type: object
       properties:
         token:
           type: string
-          description: Generated token
+          description: Generated session token
           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         expiryDate:
           type: string
           format: date-time
-          description: Token expiration date
-          example: "2024-02-15T10:30:00Z"
+          description: Token expiry date
+          example: "2025-10-17T12:00:00Z"
 
-    # Gateway Management Schemas (from Go structs)
+    # ==================== Gateway Schemas ====================
     PartnerOrgCGWCreateReq:
       type: object
       required:
         - deviceName
-        - Location
+        - isIpsecEnabled
       properties:
         deviceName:
           type: string
-          description: Name of the gateway device
-          example: "Main Office Gateway"
+          description: Gateway device name
+          example: "Gateway-SF-01"
         Location:
           type: string
-          description: Location of the gateway
-          example: "New York Office"
+          description: Gateway location
+          example: "San Francisco Office"
         isIpsecEnabled:
           type: boolean
           description: Whether IPSec is enabled
@@ -1782,18 +1364,23 @@ components:
 
     LanSubnet:
       type: object
+      required:
+        - subnet
+        - gateway
+        - interface
       properties:
         subnet:
           type: string
-          description: Subnet address
+          description: Subnet CIDR
           example: "192.168.1.0/24"
         gateway:
           type: string
-          description: Gateway address
+          format: ipv4
+          description: Gateway IP address
           example: "192.168.1.1"
         interface:
           type: string
-          description: Interface name
+          description: Network interface
           example: "eth0"
         vlanid:
           type: integer
@@ -1802,36 +1389,41 @@ components:
 
     VlanSubnet:
       type: object
+      required:
+        - subnet
+        - gateway
+        - vlanid
       properties:
         subnet:
           type: string
-          description: Subnet address
-          example: "10.0.1.0/24"
+          description: Subnet CIDR
+          example: "192.168.10.0/24"
         gateway:
           type: string
-          description: Gateway address
-          example: "10.0.1.1"
+          format: ipv4
+          description: Gateway IP address
+          example: "192.168.10.1"
         vlanid:
           type: integer
           description: VLAN ID
-          example: 200
+          example: 10
 
     PartnerOrgCGWCreateRsp:
       type: object
       properties:
         cgwTag:
           type: string
-          description: Gateway tag
-          example: "main_office_gw"
+          description: Gateway tag/name
+          example: "gateway-sf-01"
         cgwID:
           type: string
           format: uuid
-          description: Unique gateway identifier
-          example: "550e8400-e29b-41d4-a716-446655440003"
+          description: Gateway ID
+          example: "123e4567-e89b-12d3-a456-426614174003"
         authToken:
           type: string
-          description: Gateway authentication token
-          example: "gateway_auth_token_123"
+          description: Authentication token for the gateway
+          example: "gw-auth-token-123456789"
 
     PartnerOrgCGWUpdateReq:
       type: object
@@ -1851,79 +1443,114 @@ components:
             $ref: '#/components/schemas/VlanSubnet'
           description: VLAN subnet configurations
 
-    # Common Response Schemas
-    SuccessMessage:
+    PartnerOrgCGWInfo:
       type: object
-      required:
-        - message
       properties:
-        message:
+        cgwTag:
           type: string
-          description: Success message
-          example: "Operation completed successfully"
+          description: Gateway tag/name
+          example: "gateway-sf-01"
+        cgwID:
+          type: string
+          format: uuid
+          description: Gateway ID
+          example: "123e4567-e89b-12d3-a456-426614174003"
+        deviceName:
+          type: string
+          description: Gateway device name
+          example: "Gateway-SF-01"
+        location:
+          type: string
+          description: Gateway location
+          example: "San Francisco Office"
+        isIpsecEnabled:
+          type: boolean
+          description: Whether IPSec is enabled
+          example: true
+        status:
+          type: string
+          description: Gateway status
+          example: "active"
+          enum:
+            - active
+            - inactive
+            - pending
+        lanSubnets:
+          type: array
+          items:
+            $ref: '#/components/schemas/LanSubnet'
+        vlanSubnets:
+          type: array
+          items:
+            $ref: '#/components/schemas/VlanSubnet'
+
+    # ==================== Common Schemas ====================
+    StatusCodeRsp:
+      type: object
+      properties:
+        statuscode:
+          type: integer
+          description: HTTP status code
+          example: 200
 
     ErrorResponse:
       type: object
-      required:
-        - errorCode
-        - message
       properties:
-        errorCode:
-          type: string
-          description: Error code
-          example: "INVALID_REQUEST"
-        message:
+        error:
           type: string
           description: Error message
-          example: "Invalid request parameters"
+          example: "Invalid request"
+        errorCode:
+          type: integer
+          description: Application-specific error code
+          example: 1001
+        message:
+          type: string
+          description: Detailed error message
+          example: "The provided request data is invalid"
 
   responses:
     BadRequest:
-      description: Bad Request - Invalid JSON or missing required fields
+      description: Bad request - Invalid input data
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
           example:
-            errorCode: "BAD_JSON_REQUEST"
-            message: "Invalid JSON format or missing required fields"
-
+            error: "Bad Request"
+            errorCode: 400
+            message: "Invalid JSON in request body"
+    
     Unauthorized:
-      description: Unauthorized - Invalid or expired session
+      description: Unauthorized - Invalid or missing authentication token
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
           example:
-            errorCode: "SESSION_ID_NOT_FOUND"
-            message: "Session ID not found in request"
-
+            error: "Unauthorized"
+            errorCode: 401
+            message: "Invalid or expired session token"
+    
     NotFound:
-      description: Not Found - Resource not found or access denied
+      description: Not found - Resource does not exist
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
           example:
-            errorCode: "RESOURCE_NOT_FOUND"
-            message: "Resource not found or access denied"
+            error: "Not Found"
+            errorCode: 404
+            message: "The requested resource was not found"
+    
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Internal Server Error"
+            errorCode: 500
+            message: "An unexpected error occurred"
 
-tags:
-  - name: MSP Management
-    description: Operations for managing Member Service Providers
-  - name: MSP User Management
-    description: Operations for managing users within MSPs
-  - name: Partner Organisation Management
-    description: Operations for managing partner organisations
-  - name: Organisation Session Management
-    description: Operations for managing organisation sessions
-  - name: Subscription Management
-    description: Operations for managing subscriptions and organisation status
-  - name: Billing & Usage
-    description: Operations for billing and usage tracking
-  - name: Token Management
-    description: Operations for generating and managing tokens
-  - name: Gateway Management
-    description: Operations for managing organisation gateways
-  - name: Gateway Session Management
-    description: Operations for managing gateway sessions
