@@ -21,16 +21,16 @@ tags:
     description: MSP (Managed Service Provider) management operations
   - name: MSP Users
     description: MSP user management operations
+  - name: Partner Tokens
+    description: Partner session token management
   - name: Partner Organizations
     description: Partner organization management operations
-  - name: Organization Sessions
-    description: Partner organization session management
   - name: Organization Subscriptions
     description: Partner organization subscription management
   - name: Usage & Billing
     description: Usage and billing information
-  - name: Partner Tokens
-    description: Partner session token management
+  - name: Organization Sessions
+    description: Partner organization session management
   - name: Organization Gateways
     description: Partner organization gateway (CGW) management
   - name: Gateway Sessions
@@ -298,6 +298,26 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  # ==================== Partner Token ====================
+  /partner/token:
+    post:
+      tags:
+        - Partner Tokens
+      summary: Generate partner session token
+      description: Generates a new session token for partner authentication
+      operationId: generatePartnerSessionToken
+      responses:
+        '200':
+          description: Token generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerToken'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   # ==================== Partner Organisation CRUD ====================
   /partner/organisation:
     post:
@@ -413,91 +433,6 @@ paths:
       responses:
         '200':
           description: Organization deleted successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StatusCodeRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  # ==================== Partner Organisation Session ====================
-  /partner/organisation/session/{orgid}:
-    post:
-      tags:
-        - Organization Sessions
-      summary: Create partner organization session
-      description: Creates a new session for accessing a partner organization
-      operationId: createPartnerOrganisationSession
-      parameters:
-        - $ref: '#/components/parameters/OrgId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PartnerOrgSessionRequest'
-      responses:
-        '200':
-          description: Session created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerOrgSessionResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /partner/organisation/session/{sessionid}:
-    put:
-      tags:
-        - Organization Sessions
-      summary: Update partner organization session
-      description: Updates an existing organization session
-      operationId: updatePartnerOrganisationSession
-      parameters:
-        - $ref: '#/components/parameters/SessionId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GatewaySessionRequest'
-      responses:
-        '200':
-          description: Session updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerOrgSessionResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    
-    delete:
-      tags:
-        - Organization Sessions
-      summary: Delete partner organization session
-      description: Deletes an existing organization session
-      operationId: deletePartnerOrganisationSession
-      parameters:
-        - $ref: '#/components/parameters/SessionId'
-      responses:
-        '200':
-          description: Session deleted successfully
           content:
             application/json:
               schema:
@@ -640,23 +575,88 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  # ==================== Partner Token ====================
-  /partner/token:
+  # ==================== Partner Organisation Session ====================
+  /partner/organisation/session/{orgid}:
     post:
       tags:
-        - Partner Tokens
-      summary: Generate partner session token
-      description: Generates a new session token for partner authentication
-      operationId: generatePartnerSessionToken
+        - Organization Sessions
+      summary: Create partner organization session
+      description: Creates a new session for accessing a partner organization
+      operationId: createPartnerOrganisationSession
+      parameters:
+        - $ref: '#/components/parameters/OrgId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerOrgSessionRequest'
       responses:
         '200':
-          description: Token generated successfully
+          description: Session created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PartnerToken'
+                $ref: '#/components/schemas/PartnerOrgSessionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /partner/organisation/session/{sessionid}:
+    put:
+      tags:
+        - Organization Sessions
+      summary: Update partner organization session
+      description: Updates an existing organization session
+      operationId: updatePartnerOrganisationSession
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewaySessionRequest'
+      responses:
+        '200':
+          description: Session updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerOrgSessionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    delete:
+      tags:
+        - Organization Sessions
+      summary: Delete partner organization session
+      description: Deletes an existing organization session
+      operationId: deletePartnerOrganisationSession
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Session deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusCodeRsp'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -1116,6 +1116,20 @@ components:
           description: User role
           example: "admin"
 
+    # ==================== Token Schemas ====================
+    PartnerToken:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Generated session token
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        expiryDate:
+          type: string
+          format: date-time
+          description: Token expiry date
+          example: "2025-10-17T12:00:00Z"
+
     # ==================== Partner Organisation Schemas ====================
     PartnerOrgRequest:
       type: object
@@ -1224,53 +1238,6 @@ components:
           description: Organization ID
           example: "123e4567-e89b-12d3-a456-426614174001"
 
-    # ==================== Session Schemas ====================
-    PartnerOrgSessionRequest:
-      type: object
-      required:
-        - username
-      properties:
-        username:
-          type: string
-          description: Username for the session
-          example: "ajohnson"
-        rbac:
-          type: string
-          description: Role-based access control setting
-          example: "admin"
-        theme:
-          type: string
-          description: UI theme preference
-          example: "dark"
-          enum:
-            - light
-            - dark
-
-    GatewaySessionRequest:
-      type: object
-      properties:
-        theme:
-          type: string
-          description: UI theme preference
-          example: "dark"
-          enum:
-            - light
-            - dark
-
-    PartnerOrgSessionResponse:
-      type: object
-      properties:
-        redirectURL:
-          type: string
-          format: uri
-          description: URL to redirect after session creation
-          example: "https://portal.example.com/dashboard"
-        sessionID:
-          type: string
-          format: uuid
-          description: Created session ID
-          example: "123e4567-e89b-12d3-a456-426614174002"
-
     # ==================== Subscription Schemas ====================
     PartnerOrgSubUpdateRequest:
       type: object
@@ -1358,19 +1325,52 @@ components:
         usage:
           $ref: '#/components/schemas/PartnerOrgUsageData'
 
-    # ==================== Token Schemas ====================
-    PartnerToken:
+    # ==================== Session Schemas ====================
+    PartnerOrgSessionRequest:
+      type: object
+      required:
+        - username
+      properties:
+        username:
+          type: string
+          description: Username for the session
+          example: "ajohnson"
+        rbac:
+          type: string
+          description: Role-based access control setting
+          example: "admin"
+        theme:
+          type: string
+          description: UI theme preference
+          example: "dark"
+          enum:
+            - light
+            - dark
+
+    GatewaySessionRequest:
       type: object
       properties:
-        token:
+        theme:
           type: string
-          description: Generated session token
-          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        expiryDate:
+          description: UI theme preference
+          example: "dark"
+          enum:
+            - light
+            - dark
+
+    PartnerOrgSessionResponse:
+      type: object
+      properties:
+        redirectURL:
           type: string
-          format: date-time
-          description: Token expiry date
-          example: "2025-10-17T12:00:00Z"
+          format: uri
+          description: URL to redirect after session creation
+          example: "https://portal.example.com/dashboard"
+        sessionID:
+          type: string
+          format: uuid
+          description: Created session ID
+          example: "123e4567-e89b-12d3-a456-426614174002"
 
     # ==================== Gateway Schemas ====================
     PartnerOrgCGWCreateReq:
@@ -1584,4 +1584,3 @@ components:
             error: "Internal Server Error"
             errorCode: 500
             message: "An unexpected error occurred"
-
