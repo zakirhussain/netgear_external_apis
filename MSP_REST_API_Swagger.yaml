@@ -36,6 +36,19 @@ tags:
   - name: Gateway Sessions
     description: Partner organization gateway session management
 
+x-tagGroups:
+  - name: Partner Management
+    tags:
+      - MSP
+      - MSP Users
+      - Partner Tokens
+      - Partner Organisations
+      - Organisation Subscriptions
+      - Usage & Billing
+      - Organisation Sessions
+      - Organisation Gateways
+      - Gateway Sessions
+
 paths:
   # ==================== MSP CRUD ====================
   /msp:
