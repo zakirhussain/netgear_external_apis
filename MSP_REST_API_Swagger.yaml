@@ -1,7 +1,10 @@
 openapi: 3.0.3
 info:
-  title: Partner Organization Management API
-  description: API for managing MSP (Managed Service Provider) partners, organizations, users, gateways, and subscriptions
+  title: MSP Management API
+  description: |
+    API for managing Managed Service Providers (MSPs), their users, organizations, gateways, and subscriptions.
+    
+    All endpoints require authentication via the X-Auth-Token header.
   version: 1.0.0
   contact:
     name: API Support
@@ -10,62 +13,54 @@ info:
 servers:
   - url: https://api.example.com/v1
     description: Production server
-  - url: https://api-staging.example.com/v1
+  - url: https://staging-api.example.com/v1
     description: Staging server
-
-security:
-  - SessionAuth: []
 
 tags:
   - name: 1. MSP
-    description: MSP (Managed Service Provider) management operations
+    description: MSP management operations
   - name: 2. MSP Users
     description: MSP user management operations
-  - name: 3. MSP Tokens
-    description: MSP session token management
-  - name: 4. MSP Organisation Gateways
-    description: MSP organization gateway (CGW) management
-  - name: 5. MSP Gateway Sessions
-    description: MSP organization gateway session management
-  - name: 6. Partner Tokens
-    description: Partner session token management
-  - name: 7. Partner Organisations
-    description: Partner organization management operations
-  - name: 8. Organisation Subscriptions
-    description: Partner organization subscription management
-  - name: 9. Usage & Billing
-    description: Usage and billing information
-  - name: 10. Organisation Sessions
-    description: Partner organization session management
-  - name: 11. Organisation Gateways
-    description: Partner organization gateway (CGW) management
-  - name: 12. Gateway Sessions
-    description: Partner organization gateway session management
+  - name: 3. MSP Organisations
+    description: MSP organization management operations
+  - name: 4. MSP Organisation Sessions
+    description: MSP organization session management
+  - name: 5. MSP Organisation Subscriptions
+    description: MSP organization subscription management
+  - name: 6. MSP Usage & Billing
+    description: MSP usage and billing information
+  - name: 7. MSP Tokens
+    description: MSP token management
+  - name: 8. MSP Organisation Gateways
+    description: MSP organization gateway management
+  - name: 9. MSP Gateway Sessions
+    description: MSP gateway session management
 
 x-tagGroups:
-  - name: Partner Management
+  - name: MSP Management
     tags:
       - 1. MSP
       - 2. MSP Users
-      - 3. MSP Tokens
-      - 4. MSP Organisation Gateways
-      - 5. MSP Gateway Sessions
-      - 6. Partner Tokens
-      - 7. Partner Organisations
-      - 8. Organisation Subscriptions
-      - 9. Usage & Billing
-      - 10. Organisation Sessions
-      - 11. Organisation Gateways
-      - 12. Gateway Sessions
+      - 7. MSP Tokens
+  - name: Organization Management
+    tags:
+      - 3. MSP Organisations
+      - 4. MSP Organisation Sessions
+      - 5. MSP Organisation Subscriptions
+      - 6. MSP Usage & Billing
+  - name: Gateway Management
+    tags:
+      - 8. MSP Organisation Gateways
+      - 9. MSP Gateway Sessions
 
 paths:
-  # ==================== MSP CRUD ====================
+  # ==================== MSP Endpoints ====================
   /msp:
     post:
       tags:
         - 1. MSP
-      summary: Create a new MSP
-      description: Creates a new Managed Service Provider under the current partner
+      summary: Create new MSP
+      description: Creates a new Managed Service Provider
       operationId: createMSP
       requestBody:
         required: true
@@ -152,7 +147,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdatePartnerInfoReq'
+                $ref: '#/components/schemas/StatusCodeRsp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -177,8 +172,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatusCodeRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -186,7 +179,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  # ==================== MSP User CRUD ====================
+  # ==================== MSP User Endpoints ====================
   /msp/user/{mspid}:
     post:
       tags:
@@ -204,7 +197,7 @@ paths:
               $ref: '#/components/schemas/CreatePartnerUserReq'
       responses:
         '200':
-          description: MSP user created successfully
+          description: User created successfully
           content:
             application/json:
               schema:
@@ -226,7 +219,7 @@ paths:
         - $ref: '#/components/parameters/MspId'
       responses:
         '200':
-          description: List of MSP users retrieved successfully
+          description: List of users retrieved successfully
           content:
             application/json:
               schema:
@@ -242,7 +235,7 @@ paths:
     get:
       tags:
         - 2. MSP Users
-      summary: Get MSP user by ID
+      summary: Get MSP user
       description: Retrieves a specific user from an MSP
       operationId: getMSPUser
       parameters:
@@ -250,13 +243,11 @@ paths:
         - $ref: '#/components/parameters/UserId'
       responses:
         '200':
-          description: MSP user retrieved successfully
+          description: User retrieved successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetPartnerUserResp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -268,7 +259,7 @@ paths:
       tags:
         - 2. MSP Users
       summary: Update MSP user
-      description: Updates an existing MSP user's information
+      description: Updates an existing MSP user
       operationId: updateMSPUser
       parameters:
         - $ref: '#/components/parameters/MspId'
@@ -281,11 +272,11 @@ paths:
               $ref: '#/components/schemas/CreatePartnerUserReq'
       responses:
         '200':
-          description: MSP user updated successfully
+          description: User updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreatePartnerUserResp'
+                $ref: '#/components/schemas/StatusCodeRsp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -299,20 +290,18 @@ paths:
       tags:
         - 2. MSP Users
       summary: Delete MSP user
-      description: Deletes an existing MSP user
+      description: Deletes an MSP user
       operationId: deleteMSPUser
       parameters:
         - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/UserId'
       responses:
         '200':
-          description: MSP user deleted successfully
+          description: User deleted successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatusCodeRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -320,286 +309,16 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  # ==================== MSP Token ====================
-  /msp/token/{mspid}:
+  # ==================== MSP Organisation Endpoints ====================
+  /msp/organisation/{mspid}:
     post:
       tags:
-        - 3. MSP Tokens
-      summary: Generate MSP session token
-      description: Generates a new session token for MSP authentication
-      operationId: generateMSPSessionToken
+        - 3. MSP Organisations
+      summary: Create organization
+      description: Creates a new organization under an MSP
+      operationId: createMSPOrganisation
       parameters:
         - $ref: '#/components/parameters/MspId'
-      responses:
-        '200':
-          description: Token generated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerToken'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  # ==================== MSP Organisation Gateway ====================
-  /msp/organisation/gateway/{mspid}/{orgid}:
-    post:
-      tags:
-        - 4. MSP Organisation Gateways
-      summary: Create MSP organization gateway
-      description: Creates a new gateway (CGW) for an MSP organization
-      operationId: createMSPOrgCGW
-      parameters:
-        - $ref: '#/components/parameters/MspId'
-        - $ref: '#/components/parameters/OrgId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PartnerOrgCGWCreateReq'
-      responses:
-        '200':
-          description: Gateway created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerOrgCGWCreateRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    
-    get:
-      tags:
-        - 4. MSP Organisation Gateways
-      summary: Get all MSP organization gateways
-      description: Retrieves all gateways for a specific MSP organization
-      operationId: getMSPOrgAllCGW
-      parameters:
-        - $ref: '#/components/parameters/MspId'
-        - $ref: '#/components/parameters/OrgId'
-      responses:
-        '200':
-          description: List of gateways retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PartnerOrgCGWInfo'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /msp/organisation/gateway/{mspid}/{orgid}/{cgwid}:
-    get:
-      tags:
-        - 4. MSP Organisation Gateways
-      summary: Get MSP organization gateway by ID
-      description: Retrieves a specific gateway by its ID
-      operationId: getMSPOrgCGW
-      parameters:
-        - $ref: '#/components/parameters/MspId'
-        - $ref: '#/components/parameters/OrgId'
-        - $ref: '#/components/parameters/CgwId'
-      responses:
-        '200':
-          description: Gateway retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerOrgCGWInfo'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    
-    put:
-      tags:
-        - 4. MSP Organisation Gateways
-      summary: Update MSP organization gateway
-      description: Updates an existing MSP gateway's configuration
-      operationId: updateMSPOrgCGW
-      parameters:
-        - $ref: '#/components/parameters/MspId'
-        - $ref: '#/components/parameters/OrgId'
-        - $ref: '#/components/parameters/CgwId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PartnerOrgCGWUpdateReq'
-      responses:
-        '200':
-          description: Gateway updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StatusCodeRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    
-    delete:
-      tags:
-        - 4. MSP Organisation Gateways
-      summary: Delete MSP organization gateway
-      description: Deletes an existing MSP gateway
-      operationId: deleteMSPOrgCGW
-      parameters:
-        - $ref: '#/components/parameters/MspId'
-        - $ref: '#/components/parameters/OrgId'
-        - $ref: '#/components/parameters/CgwId'
-      responses:
-        '200':
-          description: Gateway deleted successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StatusCodeRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  # ==================== MSP Organisation Gateway Session ====================
-  /msp/organisation/gateway/session/{mspid}/{orgid}/{cgwid}:
-    post:
-      tags:
-        - 5. MSP Gateway Sessions
-      summary: Create MSP organization gateway session
-      description: Creates a new session for accessing an MSP organization's gateway
-      operationId: createMSPOrgCgwSession
-      parameters:
-        - $ref: '#/components/parameters/MspId'
-        - $ref: '#/components/parameters/OrgId'
-        - $ref: '#/components/parameters/CgwId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PartnerOrgSessionRequest'
-      responses:
-        '200':
-          description: Gateway session created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerOrgSessionResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /msp/organisation/gateway/session/{mspid}/{sessionid}/{cgwid}:
-    put:
-      tags:
-        - 5. MSP Gateway Sessions
-      summary: Update MSP organization gateway session
-      description: Updates an existing MSP gateway session
-      operationId: updateMSPOrganisationGatewaySession
-      parameters:
-        - $ref: '#/components/parameters/MspId'
-        - $ref: '#/components/parameters/SessionId'
-        - $ref: '#/components/parameters/CgwId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GatewaySessionRequest'
-      responses:
-        '200':
-          description: Gateway session updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerOrgSessionResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    
-    delete:
-      tags:
-        - 5. MSP Gateway Sessions
-      summary: Delete MSP organization gateway session
-      description: Deletes an existing MSP gateway session
-      operationId: deleteMSPOrganisationGatewaySession
-      parameters:
-        - $ref: '#/components/parameters/MspId'
-        - $ref: '#/components/parameters/SessionId'
-        - $ref: '#/components/parameters/CgwId'
-      responses:
-        '200':
-          description: Gateway session deleted successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StatusCodeRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  # ==================== Partner Token ====================
-  /partner/token:
-    post:
-      tags:
-        - 6. Partner Tokens
-      summary: Generate partner session token
-      description: Generates a new session token for partner authentication
-      operationId: generatePartnerSessionToken
-      responses:
-        '200':
-          description: Token generated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerToken'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  # ==================== Partner Organisation CRUD ====================
-  /partner/organisation:
-    post:
-      tags:
-        - 7. Partner Organisations
-      summary: Create partner organization
-      description: Creates a new organization under a partner
-      operationId: createPartnerOrganisation
       requestBody:
         required: true
         content:
@@ -620,35 +339,15 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /partner/organisations:
+  /msp/organisation/{mspid}/{orgid}:
     get:
       tags:
-        - 7. Partner Organisations
-      summary: Get all partner organizations
-      description: Retrieves all organizations under the current partner
-      operationId: getPartnerAllOrganisations
-      responses:
-        '200':
-          description: List of organizations retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PartnerOrgList'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /partner/organisation/{orgid}:
-    get:
-      tags:
-        - 7. Partner Organisations
-      summary: Get partner organization by ID
-      description: Retrieves a specific organization by its ID
-      operationId: getPartnerOrganisation
+        - 3. MSP Organisations
+      summary: Get organization
+      description: Retrieves a specific organization under an MSP
+      operationId: getMSPOrganisation
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/OrgId'
       responses:
         '200':
@@ -657,8 +356,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PartnerOrgList'
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -668,11 +365,12 @@ paths:
     
     put:
       tags:
-        - 7. Partner Organisations
-      summary: Update partner organization
-      description: Updates an existing organization's information
-      operationId: updatePartnerOrganisation
+        - 3. MSP Organisations
+      summary: Update organization
+      description: Updates an existing organization under an MSP
+      operationId: updateMSPOrganisation
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/OrgId'
       requestBody:
         required: true
@@ -698,15 +396,100 @@ paths:
     
     delete:
       tags:
-        - 7. Partner Organisations
-      summary: Delete partner organization
-      description: Deletes an existing organization
-      operationId: deletePartnerOrganisation
+        - 3. MSP Organisations
+      summary: Delete organization
+      description: Deletes an organization under an MSP
+      operationId: deleteMSPOrganisation
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/OrgId'
       responses:
         '200':
           description: Organization deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusCodeRsp'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /msp/organisations/{mspid}:
+    get:
+      tags:
+        - 3. MSP Organisations
+      summary: Get all organizations
+      description: Retrieves all organizations under an MSP
+      operationId: getMSPAllOrganisations
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+      responses:
+        '200':
+          description: List of organizations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartnerOrgList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ==================== MSP Organisation Session Endpoints ====================
+  /msp/organisation/session/{mspid}/{orgid}:
+    post:
+      tags:
+        - 4. MSP Organisation Sessions
+      summary: Create organization session
+      description: Creates a new session for accessing an MSP organization
+      operationId: createMSPOrganisationSession
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/OrgId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerOrgSessionRequest'
+      responses:
+        '200':
+          description: Session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerOrgSessionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /msp/organisation/session/{mspid}/{sessionid}:
+    put:
+      tags:
+        - 4. MSP Organisation Sessions
+      summary: Update organization session
+      description: Updates an existing MSP organization session
+      operationId: updateMSPOrganisationSession
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewaySessionRequest'
+      responses:
+        '200':
+          description: Session updated successfully
           content:
             application/json:
               schema:
@@ -719,16 +502,40 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+    
+    delete:
+      tags:
+        - 4. MSP Organisation Sessions
+      summary: Delete organization session
+      description: Deletes an MSP organization session
+      operationId: deleteMSPOrganisationSession
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Session deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusCodeRsp'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
-  # ==================== Partner Organisation Subscription ====================
-  /partner/organisation/subscription/{orgid}:
+  # ==================== MSP Organisation Subscription Endpoints ====================
+  /msp/organisation/subscription/{mspid}/{orgid}:
     put:
       tags:
-        - 8. Organisation Subscriptions
-      summary: Update partner organization subscription
-      description: Updates the subscription details for an organization
-      operationId: updatePartnerOrganisationSubscription
+        - 5. MSP Organisation Subscriptions
+      summary: Update organization subscription
+      description: Updates the subscription details for an MSP organization
+      operationId: updateMSPOrganisationSubscription
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/OrgId'
       requestBody:
         required: true
@@ -752,14 +559,15 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /partner/organisation/suspend/{orgid}:
+  /msp/organisation/suspend/{mspid}/{orgid}:
     put:
       tags:
-        - 8. Organisation Subscriptions
-      summary: Suspend partner organization
-      description: Suspends an organization's services
-      operationId: suspendPartnerOrganisation
+        - 5. MSP Organisation Subscriptions
+      summary: Suspend organization
+      description: Suspends an MSP organization's subscription
+      operationId: suspendMSPOrganisation
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/OrgId'
       responses:
         '200':
@@ -768,8 +576,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatusCodeRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -777,14 +583,15 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /partner/organisation/activate/{orgid}:
+  /msp/organisation/activate/{mspid}/{orgid}:
     put:
       tags:
-        - 8. Organisation Subscriptions
-      summary: Activate partner organization
-      description: Activates a suspended organization's services
-      operationId: activatePartnerOrganisation
+        - 5. MSP Organisation Subscriptions
+      summary: Activate organization
+      description: Activates an MSP organization's subscription
+      operationId: activateMSPOrganisation
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/OrgId'
       responses:
         '200':
@@ -793,8 +600,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatusCodeRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -802,17 +607,19 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  # ==================== Usage & Billing ====================
-  /partner/usage:
+  # ==================== MSP Usage Endpoints ====================
+  /msp/usage/{mspid}:
     get:
       tags:
-        - 9. Usage & Billing
-      summary: Get partner billing usage
-      description: Retrieves billing usage information for all organizations under the partner
-      operationId: getPartnerBillingUsage
+        - 6. MSP Usage & Billing
+      summary: Get MSP usage
+      description: Retrieves billing usage information for all organizations under an MSP
+      operationId: getMSPBillingUsage
+      parameters:
+        - $ref: '#/components/parameters/MspId'
       responses:
         '200':
-          description: Billing usage retrieved successfully
+          description: Usage information retrieved successfully
           content:
             application/json:
               schema:
@@ -824,14 +631,15 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /partner/usage/{orgid}:
+  /msp/usage/{mspid}/{orgid}:
     get:
       tags:
-        - 9. Usage & Billing
-      summary: Get partner organization usage
-      description: Retrieves usage information for a specific organization
-      operationId: getPartnerOrgUsage
+        - 6. MSP Usage & Billing
+      summary: Get organization usage
+      description: Retrieves usage information for a specific MSP organization
+      operationId: getMSPOrgUsage
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/OrgId'
       responses:
         '200':
@@ -840,8 +648,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PartnerOrgsUsage'
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -849,84 +655,23 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  # ==================== Partner Organisation Session ====================
-  /partner/organisation/session/{orgid}:
+  # ==================== MSP Token Endpoints ====================
+  /msp/token/{mspid}:
     post:
       tags:
-        - 10. Organisation Sessions
-      summary: Create partner organization session
-      description: Creates a new session for accessing a partner organization
-      operationId: createPartnerOrganisationSession
+        - 7. MSP Tokens
+      summary: Generate MSP token
+      description: Generates a new session token for an MSP
+      operationId: generateMSPSessionToken
       parameters:
-        - $ref: '#/components/parameters/OrgId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PartnerOrgSessionRequest'
+        - $ref: '#/components/parameters/MspId'
       responses:
         '200':
-          description: Session created successfully
+          description: Token generated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PartnerOrgSessionResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /partner/organisation/session/{sessionid}:
-    put:
-      tags:
-        - 10. Organisation Sessions
-      summary: Update partner organization session
-      description: Updates an existing organization session
-      operationId: updatePartnerOrganisationSession
-      parameters:
-        - $ref: '#/components/parameters/SessionId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GatewaySessionRequest'
-      responses:
-        '200':
-          description: Session updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerOrgSessionResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    
-    delete:
-      tags:
-        - 10. Organisation Sessions
-      summary: Delete partner organization session
-      description: Deletes an existing organization session
-      operationId: deletePartnerOrganisationSession
-      parameters:
-        - $ref: '#/components/parameters/SessionId'
-      responses:
-        '200':
-          description: Session deleted successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StatusCodeRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
+                $ref: '#/components/schemas/PartnerToken'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -934,15 +679,16 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  # ==================== Partner Organisation Gateway ====================
-  /partner/organisation/gateway/{orgid}:
+  # ==================== MSP Organisation Gateway Endpoints ====================
+  /msp/organisation/gateway/{mspid}/{orgid}:
     post:
       tags:
-        - 11. Organisation Gateways
-      summary: Create partner organization gateway
-      description: Creates a new gateway (CGW) for an organization
-      operationId: createPartnerOrgCGW
+        - 8. MSP Organisation Gateways
+      summary: Create gateway
+      description: Creates a new gateway for an MSP organization
+      operationId: createMSPOrgGateway
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/OrgId'
       requestBody:
         required: true
@@ -966,11 +712,12 @@ paths:
     
     get:
       tags:
-        - 11. Organisation Gateways
-      summary: Get all partner organization gateways
-      description: Retrieves all gateways for a specific organization
-      operationId: getPartnerOrgAllCGW
+        - 8. MSP Organisation Gateways
+      summary: Get all gateways
+      description: Retrieves all gateways for a specific MSP organization
+      operationId: getMSPOrgAllGateways
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/OrgId'
       responses:
         '200':
@@ -986,16 +733,17 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /partner/organisation/gateway/{orgid}/{cgwid}:
+  /msp/organisation/gateway/{mspid}/{orgid}/{cgwid}:
     get:
       tags:
-        - 11. Organisation Gateways
-      summary: Get partner organization gateway by ID
-      description: Retrieves a specific gateway by its ID
-      operationId: getPartnerOrgCGW
+        - 8. MSP Organisation Gateways
+      summary: Get gateway
+      description: Retrieves a specific gateway by its ID for an MSP organization
+      operationId: getMSPOrgGateway
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/OrgId'
-        - $ref: '#/components/parameters/CgwId'
+        - $ref: '#/components/parameters/GatewayId'
       responses:
         '200':
           description: Gateway retrieved successfully
@@ -1003,8 +751,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PartnerOrgCGWInfo'
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -1014,13 +760,14 @@ paths:
     
     put:
       tags:
-        - 11. Organisation Gateways
-      summary: Update partner organization gateway
-      description: Updates an existing gateway's configuration
-      operationId: updatePartnerOrgCGW
+        - 8. MSP Organisation Gateways
+      summary: Update gateway
+      description: Updates an existing gateway for an MSP organization
+      operationId: updateMSPOrgGateway
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/OrgId'
-        - $ref: '#/components/parameters/CgwId'
+        - $ref: '#/components/parameters/GatewayId'
       requestBody:
         required: true
         content:
@@ -1045,13 +792,14 @@ paths:
     
     delete:
       tags:
-        - 11. Organisation Gateways
-      summary: Delete partner organization gateway
-      description: Deletes an existing gateway
-      operationId: deletePartnerOrgCGW
+        - 8. MSP Organisation Gateways
+      summary: Delete gateway
+      description: Deletes a gateway from an MSP organization
+      operationId: deleteMSPOrgGateway
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/OrgId'
-        - $ref: '#/components/parameters/CgwId'
+        - $ref: '#/components/parameters/GatewayId'
       responses:
         '200':
           description: Gateway deleted successfully
@@ -1059,8 +807,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatusCodeRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -1068,17 +814,18 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  # ==================== Partner Organisation Gateway Session ====================
-  /partner/organisation/gateway/session/{orgid}/{cgwid}:
+  # ==================== MSP Gateway Session Endpoints ====================
+  /msp/organisation/gateway/session/{mspid}/{orgid}/{cgwid}:
     post:
       tags:
-        - 12. Gateway Sessions
-      summary: Create partner organization gateway session
-      description: Creates a new session for accessing an organization's gateway
-      operationId: createPartnerOrgCgwSession
+        - 9. MSP Gateway Sessions
+      summary: Create gateway session
+      description: Creates a new session for accessing an MSP organization's gateway
+      operationId: createMSPOrgGatewaySession
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/OrgId'
-        - $ref: '#/components/parameters/CgwId'
+        - $ref: '#/components/parameters/GatewayId'
       requestBody:
         required: true
         content:
@@ -1099,16 +846,17 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /partner/organisation/gateway/session/{sessionid}/{cgwid}:
+  /msp/organisation/gateway/session/{mspid}/{sessionid}/{cgwid}:
     put:
       tags:
-        - 12. Gateway Sessions
-      summary: Update partner organization gateway session
-      description: Updates an existing gateway session
-      operationId: updatePartnerOrganisationGatewaySession
+        - 9. MSP Gateway Sessions
+      summary: Update gateway session
+      description: Updates an existing MSP gateway session
+      operationId: updateMSPOrgGatewaySession
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/SessionId'
-        - $ref: '#/components/parameters/CgwId'
+        - $ref: '#/components/parameters/GatewayId'
       requestBody:
         required: true
         content:
@@ -1121,7 +869,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PartnerOrgSessionResponse'
+                $ref: '#/components/schemas/StatusCodeRsp'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -1133,13 +881,14 @@ paths:
     
     delete:
       tags:
-        - 12. Gateway Sessions
-      summary: Delete partner organization gateway session
-      description: Deletes an existing gateway session
-      operationId: deletePartnerOrganisationGatewaySession
+        - 9. MSP Gateway Sessions
+      summary: Delete gateway session
+      description: Deletes an MSP gateway session
+      operationId: deleteMSPOrgGatewaySession
       parameters:
+        - $ref: '#/components/parameters/MspId'
         - $ref: '#/components/parameters/SessionId'
-        - $ref: '#/components/parameters/CgwId'
+        - $ref: '#/components/parameters/GatewayId'
       responses:
         '200':
           description: Gateway session deleted successfully
@@ -1147,8 +896,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatusCodeRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -1156,60 +903,64 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-# ==================== Components ====================
 components:
   securitySchemes:
-    SessionAuth:
+    SessionToken:
       type: apiKey
       in: header
       name: X-Auth-Token
-      description: Session token obtained after authentication
+      description: Session authentication token
 
   parameters:
     MspId:
       name: mspid
       in: path
       required: true
-      description: MSP identifier
+      description: MSP ID
       schema:
         type: string
         format: uuid
-    
-    UserId:
-      name: id
-      in: path
-      required: true
-      description: User identifier
-      schema:
-        type: string
-        format: uuid
-    
+      example: "123e4567-e89b-12d3-a456-426614174000"
+
     OrgId:
       name: orgid
       in: path
       required: true
-      description: Organization identifier
+      description: Organization ID
       schema:
         type: string
         format: uuid
-    
+      example: "123e4567-e89b-12d3-a456-426614174001"
+
+    UserId:
+      name: id
+      in: path
+      required: true
+      description: User ID
+      schema:
+        type: string
+        format: uuid
+      example: "123e4567-e89b-12d3-a456-426614174002"
+
+    GatewayId:
+      name: cgwid
+      in: path
+      required: true
+      description: Gateway ID
+      schema:
+        type: string
+        format: uuid
+      example: "123e4567-e89b-12d3-a456-426614174003"
+
     SessionId:
       name: sessionid
       in: path
       required: true
-      description: Session identifier
+      description: Session ID
       schema:
         type: string
         format: uuid
-    
-    CgwId:
-      name: cgwid
-      in: path
-      required: true
-      description: Gateway (CGW) identifier
-      schema:
-        type: string
-        format: uuid
+      example: "123e4567-e89b-12d3-a456-426614174004"
 
   schemas:
     # ==================== MSP Schemas ====================
@@ -1218,14 +969,15 @@ components:
       required:
         - email
         - name
+        - phone
         - firstName
         - lastName
       properties:
         email:
           type: string
           format: email
-          description: MSP email address
-          example: "msp@example.com"
+          description: MSP contact email address
+          example: "contact@example-msp.com"
         name:
           type: string
           description: MSP organization name
@@ -1236,11 +988,11 @@ components:
           example: "+1-555-0123"
         firstName:
           type: string
-          description: Primary contact first name
+          description: Contact first name
           example: "John"
         lastName:
           type: string
-          description: Primary contact last name
+          description: Contact last name
           example: "Doe"
         addressCity:
           type: string
@@ -1912,4 +1664,7 @@ components:
             error: "Internal Server Error"
             errorCode: 500
             message: "An unexpected error occurred"
+
+security:
+  - SessionToken: []
 
