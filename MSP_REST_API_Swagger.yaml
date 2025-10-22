@@ -21,19 +21,25 @@ tags:
     description: MSP (Managed Service Provider) management operations
   - name: 2. MSP Users
     description: MSP user management operations
-  - name: 3. Partner Tokens
+  - name: 3. MSP Tokens
+    description: MSP session token management
+  - name: 4. MSP Organisation Gateways
+    description: MSP organization gateway (CGW) management
+  - name: 5. MSP Gateway Sessions
+    description: MSP organization gateway session management
+  - name: 6. Partner Tokens
     description: Partner session token management
-  - name: 4. Partner Organisations
+  - name: 7. Partner Organisations
     description: Partner organization management operations
-  - name: 5. Organisation Subscriptions
+  - name: 8. Organisation Subscriptions
     description: Partner organization subscription management
-  - name: 6. Usage & Billing
+  - name: 9. Usage & Billing
     description: Usage and billing information
-  - name: 7. Organisation Sessions
+  - name: 10. Organisation Sessions
     description: Partner organization session management
-  - name: 8. Organisation Gateways
+  - name: 11. Organisation Gateways
     description: Partner organization gateway (CGW) management
-  - name: 9. Gateway Sessions
+  - name: 12. Gateway Sessions
     description: Partner organization gateway session management
 
 x-tagGroups:
@@ -41,13 +47,16 @@ x-tagGroups:
     tags:
       - 1. MSP
       - 2. MSP Users
-      - 3. Partner Tokens
-      - 4. Partner Organisations
-      - 5. Organisation Subscriptions
-      - 6. Usage & Billing
-      - 7. Organisation Sessions
-      - 8. Organisation Gateways
-      - 9. Gateway Sessions
+      - 3. MSP Tokens
+      - 4. MSP Organisation Gateways
+      - 5. MSP Gateway Sessions
+      - 6. Partner Tokens
+      - 7. Partner Organisations
+      - 8. Organisation Subscriptions
+      - 9. Usage & Billing
+      - 10. Organisation Sessions
+      - 11. Organisation Gateways
+      - 12. Gateway Sessions
 
 paths:
   # ==================== MSP CRUD ====================
@@ -311,11 +320,263 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  # ==================== MSP Token ====================
+  /msp/token/{mspid}:
+    post:
+      tags:
+        - 3. MSP Tokens
+      summary: Generate MSP session token
+      description: Generates a new session token for MSP authentication
+      operationId: generateMSPSessionToken
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+      responses:
+        '200':
+          description: Token generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerToken'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ==================== MSP Organisation Gateway ====================
+  /msp/organisation/gateway/{mspid}/{orgid}:
+    post:
+      tags:
+        - 4. MSP Organisation Gateways
+      summary: Create MSP organization gateway
+      description: Creates a new gateway (CGW) for an MSP organization
+      operationId: createMSPOrgCGW
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/OrgId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerOrgCGWCreateReq'
+      responses:
+        '200':
+          description: Gateway created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerOrgCGWCreateRsp'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    get:
+      tags:
+        - 4. MSP Organisation Gateways
+      summary: Get all MSP organization gateways
+      description: Retrieves all gateways for a specific MSP organization
+      operationId: getMSPOrgAllCGW
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/OrgId'
+      responses:
+        '200':
+          description: List of gateways retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartnerOrgCGWInfo'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /msp/organisation/gateway/{mspid}/{orgid}/{cgwid}:
+    get:
+      tags:
+        - 4. MSP Organisation Gateways
+      summary: Get MSP organization gateway by ID
+      description: Retrieves a specific gateway by its ID
+      operationId: getMSPOrgCGW
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/CgwId'
+      responses:
+        '200':
+          description: Gateway retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerOrgCGWInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    put:
+      tags:
+        - 4. MSP Organisation Gateways
+      summary: Update MSP organization gateway
+      description: Updates an existing MSP gateway's configuration
+      operationId: updateMSPOrgCGW
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/CgwId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerOrgCGWUpdateReq'
+      responses:
+        '200':
+          description: Gateway updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusCodeRsp'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    delete:
+      tags:
+        - 4. MSP Organisation Gateways
+      summary: Delete MSP organization gateway
+      description: Deletes an existing MSP gateway
+      operationId: deleteMSPOrgCGW
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/CgwId'
+      responses:
+        '200':
+          description: Gateway deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusCodeRsp'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ==================== MSP Organisation Gateway Session ====================
+  /msp/organisation/gateway/session/{mspid}/{orgid}/{cgwid}:
+    post:
+      tags:
+        - 5. MSP Gateway Sessions
+      summary: Create MSP organization gateway session
+      description: Creates a new session for accessing an MSP organization's gateway
+      operationId: createMSPOrgCgwSession
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/CgwId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerOrgSessionRequest'
+      responses:
+        '200':
+          description: Gateway session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerOrgSessionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /msp/organisation/gateway/session/{mspid}/{sessionid}/{cgwid}:
+    put:
+      tags:
+        - 5. MSP Gateway Sessions
+      summary: Update MSP organization gateway session
+      description: Updates an existing MSP gateway session
+      operationId: updateMSPOrganisationGatewaySession
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/CgwId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewaySessionRequest'
+      responses:
+        '200':
+          description: Gateway session updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerOrgSessionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    delete:
+      tags:
+        - 5. MSP Gateway Sessions
+      summary: Delete MSP organization gateway session
+      description: Deletes an existing MSP gateway session
+      operationId: deleteMSPOrganisationGatewaySession
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/CgwId'
+      responses:
+        '200':
+          description: Gateway session deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusCodeRsp'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   # ==================== Partner Token ====================
   /partner/token:
     post:
       tags:
-        - 3. Partner Tokens
+        - 6. Partner Tokens
       summary: Generate partner session token
       description: Generates a new session token for partner authentication
       operationId: generatePartnerSessionToken
@@ -335,7 +596,7 @@ paths:
   /partner/organisation:
     post:
       tags:
-        - 4. Partner Organisations
+        - 7. Partner Organisations
       summary: Create partner organization
       description: Creates a new organization under a partner
       operationId: createPartnerOrganisation
@@ -362,7 +623,7 @@ paths:
   /partner/organisations:
     get:
       tags:
-        - 4. Partner Organisations
+        - 7. Partner Organisations
       summary: Get all partner organizations
       description: Retrieves all organizations under the current partner
       operationId: getPartnerAllOrganisations
@@ -383,7 +644,7 @@ paths:
   /partner/organisation/{orgid}:
     get:
       tags:
-        - 4. Partner Organisations
+        - 7. Partner Organisations
       summary: Get partner organization by ID
       description: Retrieves a specific organization by its ID
       operationId: getPartnerOrganisation
@@ -407,7 +668,7 @@ paths:
     
     put:
       tags:
-        - 4. Partner Organisations
+        - 7. Partner Organisations
       summary: Update partner organization
       description: Updates an existing organization's information
       operationId: updatePartnerOrganisation
@@ -437,7 +698,7 @@ paths:
     
     delete:
       tags:
-        - 4. Partner Organisations
+        - 7. Partner Organisations
       summary: Delete partner organization
       description: Deletes an existing organization
       operationId: deletePartnerOrganisation
@@ -463,7 +724,7 @@ paths:
   /partner/organisation/subscription/{orgid}:
     put:
       tags:
-        - 5. Organisation Subscriptions
+        - 8. Organisation Subscriptions
       summary: Update partner organization subscription
       description: Updates the subscription details for an organization
       operationId: updatePartnerOrganisationSubscription
@@ -494,7 +755,7 @@ paths:
   /partner/organisation/suspend/{orgid}:
     put:
       tags:
-        - 5. Organisation Subscriptions
+        - 8. Organisation Subscriptions
       summary: Suspend partner organization
       description: Suspends an organization's services
       operationId: suspendPartnerOrganisation
@@ -519,7 +780,7 @@ paths:
   /partner/organisation/activate/{orgid}:
     put:
       tags:
-        - 5. Organisation Subscriptions
+        - 8. Organisation Subscriptions
       summary: Activate partner organization
       description: Activates a suspended organization's services
       operationId: activatePartnerOrganisation
@@ -545,7 +806,7 @@ paths:
   /partner/usage:
     get:
       tags:
-        - 6. Usage & Billing
+        - 9. Usage & Billing
       summary: Get partner billing usage
       description: Retrieves billing usage information for all organizations under the partner
       operationId: getPartnerBillingUsage
@@ -566,7 +827,7 @@ paths:
   /partner/usage/{orgid}:
     get:
       tags:
-        - 6. Usage & Billing
+        - 9. Usage & Billing
       summary: Get partner organization usage
       description: Retrieves usage information for a specific organization
       operationId: getPartnerOrgUsage
@@ -592,7 +853,7 @@ paths:
   /partner/organisation/session/{orgid}:
     post:
       tags:
-        - 7. Organisation Sessions
+        - 10. Organisation Sessions
       summary: Create partner organization session
       description: Creates a new session for accessing a partner organization
       operationId: createPartnerOrganisationSession
@@ -621,7 +882,7 @@ paths:
   /partner/organisation/session/{sessionid}:
     put:
       tags:
-        - 7. Organisation Sessions
+        - 10. Organisation Sessions
       summary: Update partner organization session
       description: Updates an existing organization session
       operationId: updatePartnerOrganisationSession
@@ -651,7 +912,7 @@ paths:
     
     delete:
       tags:
-        - 7. Organisation Sessions
+        - 10. Organisation Sessions
       summary: Delete partner organization session
       description: Deletes an existing organization session
       operationId: deletePartnerOrganisationSession
@@ -677,7 +938,7 @@ paths:
   /partner/organisation/gateway/{orgid}:
     post:
       tags:
-        - 8. Organisation Gateways
+        - 11. Organisation Gateways
       summary: Create partner organization gateway
       description: Creates a new gateway (CGW) for an organization
       operationId: createPartnerOrgCGW
@@ -705,7 +966,7 @@ paths:
     
     get:
       tags:
-        - 8. Organisation Gateways
+        - 11. Organisation Gateways
       summary: Get all partner organization gateways
       description: Retrieves all gateways for a specific organization
       operationId: getPartnerOrgAllCGW
@@ -728,7 +989,7 @@ paths:
   /partner/organisation/gateway/{orgid}/{cgwid}:
     get:
       tags:
-        - 8. Organisation Gateways
+        - 11. Organisation Gateways
       summary: Get partner organization gateway by ID
       description: Retrieves a specific gateway by its ID
       operationId: getPartnerOrgCGW
@@ -753,7 +1014,7 @@ paths:
     
     put:
       tags:
-        - 8. Organisation Gateways
+        - 11. Organisation Gateways
       summary: Update partner organization gateway
       description: Updates an existing gateway's configuration
       operationId: updatePartnerOrgCGW
@@ -784,7 +1045,7 @@ paths:
     
     delete:
       tags:
-        - 8. Organisation Gateways
+        - 11. Organisation Gateways
       summary: Delete partner organization gateway
       description: Deletes an existing gateway
       operationId: deletePartnerOrgCGW
@@ -811,7 +1072,7 @@ paths:
   /partner/organisation/gateway/session/{orgid}/{cgwid}:
     post:
       tags:
-        - 9. Gateway Sessions
+        - 12. Gateway Sessions
       summary: Create partner organization gateway session
       description: Creates a new session for accessing an organization's gateway
       operationId: createPartnerOrgCgwSession
@@ -841,7 +1102,7 @@ paths:
   /partner/organisation/gateway/session/{sessionid}/{cgwid}:
     put:
       tags:
-        - 9. Gateway Sessions
+        - 12. Gateway Sessions
       summary: Update partner organization gateway session
       description: Updates an existing gateway session
       operationId: updatePartnerOrganisationGatewaySession
@@ -872,7 +1133,7 @@ paths:
     
     delete:
       tags:
-        - 9. Gateway Sessions
+        - 12. Gateway Sessions
       summary: Delete partner organization gateway session
       description: Deletes an existing gateway session
       operationId: deletePartnerOrganisationGatewaySession
@@ -1597,3 +1858,4 @@ components:
             error: "Internal Server Error"
             errorCode: 500
             message: "An unexpected error occurred"
+
