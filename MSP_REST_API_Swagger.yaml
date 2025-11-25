@@ -207,10 +207,16 @@ paths:
       tags:
         - 1. MSP
       summary: Activate MSP
-      description: Activates a suspended MSP
+      description: Activates a suspended MSP with subscription details
       operationId: activateMSP
       parameters:
         - $ref: '#/components/parameters/MspId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MSPActivateRequest'
       responses:
         '200':
           description: MSP activated successfully
@@ -218,6 +224,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatusCodeRsp'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -1144,6 +1152,33 @@ components:
           description: State or province
           example: "CA"
 
+    MSPActivateRequest:
+      type: object
+      required:
+        - numofusers
+        - numofgateways
+        - sase
+      properties:
+        numofusers:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of users for the MSP
+          example: 10
+        numofgateways:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of gateways for the MSP
+          example: 5
+        sase:
+          type: string
+          description: SASE tier
+          example: "pro"
+          enum:
+            - essentials
+            - pro
+
     # ==================== MSP User Schemas ====================
     CreatePartnerUserReq:
       type: object
@@ -1370,6 +1405,18 @@ components:
             - active
             - suspended
             - trial
+        numofusers:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of users
+          example: 100
+        numofgateways:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of gateways
+          example: 5
         sase:
           type: string
           description: SASE tier
@@ -1406,6 +1453,18 @@ components:
           minimum: 0
           description: Number of gateways
           example: 5
+        numofsubusers:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of subscribed users
+          example: 120
+        numofsubgateways:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of subscribed gateways
+          example: 10
         totaluserscost:
           type: number
           format: double
