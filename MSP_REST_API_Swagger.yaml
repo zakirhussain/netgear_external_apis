@@ -179,6 +179,52 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  /msp/suspend/{mspid}:
+    put:
+      tags:
+        - 1. MSP
+      summary: Suspend MSP
+      description: Suspends an MSP and all its organizations
+      operationId: suspendMSP
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+      responses:
+        '200':
+          description: MSP suspended successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusCodeRsp'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /msp/activate/{mspid}:
+    put:
+      tags:
+        - 1. MSP
+      summary: Activate MSP
+      description: Activates a suspended MSP
+      operationId: activateMSP
+      parameters:
+        - $ref: '#/components/parameters/MspId'
+      responses:
+        '200':
+          description: MSP activated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusCodeRsp'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   # ==================== MSP User Endpoints ====================
   /msp/user/{mspid}:
     post:
