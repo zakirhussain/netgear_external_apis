@@ -17,23 +17,23 @@ servers:
     description: Staging server
 
 tags:
-  - name: 1. MSP
+  - name: 01. MSP
     description: MSP management operations
-  - name: 2. MSP Distributor
+  - name: 02. MSP Distributor
     description: MSP distributor management operations
-  - name: 3. MSP Users
+  - name: 03. MSP Users
     description: MSP user management operations
-  - name: 4. MSP Organisations
+  - name: 04. MSP Organisations
     description: MSP organization management operations
-  - name: 5. MSP Organisation Sessions
+  - name: 05. MSP Organisation Sessions
     description: MSP organization session management
-  - name: 6. MSP Organisation Subscriptions
+  - name: 06. MSP Organisation Subscriptions
     description: MSP organization subscription management
-  - name: 7. MSP Usage & Billing
+  - name: 07. MSP Usage & Billing
     description: MSP usage and billing information
-  - name: 8. MSP Tokens
+  - name: 08. MSP Tokens
     description: MSP token management
-  - name: 9. MSP Organisation Gateways
+  - name: 09. MSP Organisation Gateways
     description: MSP organization gateway management
   - name: 10. MSP Gateway Sessions
     description: MSP gateway session management
@@ -41,19 +41,19 @@ tags:
 x-tagGroups:
   - name: MSP Management
     tags:
-      - 1. MSP
-      - 2. MSP Distributor
-      - 3. MSP Users
-      - 8. MSP Tokens
+      - 01. MSP
+      - 02. MSP Distributor
+      - 03. MSP Users
+      - 08. MSP Tokens
   - name: Organization Management
     tags:
-      - 4. MSP Organisations
-      - 5. MSP Organisation Sessions
-      - 6. MSP Organisation Subscriptions
-      - 7. MSP Usage & Billing
+      - 04. MSP Organisations
+      - 05. MSP Organisation Sessions
+      - 06. MSP Organisation Subscriptions
+      - 07. MSP Usage & Billing
   - name: Gateway Management
     tags:
-      - 9. MSP Organisation Gateways
+      - 09. MSP Organisation Gateways
       - 10. MSP Gateway Sessions
 
 paths:
@@ -61,7 +61,7 @@ paths:
   /msp:
     post:
       tags:
-        - 1. MSP
+        - 01. MSP
       summary: Create new MSP
       description: Creates a new Managed Service Provider
       operationId: createMSP
@@ -87,7 +87,7 @@ paths:
     
     get:
       tags:
-        - 1. MSP
+        - 01. MSP
       summary: Get all MSPs
       description: Retrieves all MSPs under the current partner
       operationId: getAllMSP
@@ -108,7 +108,7 @@ paths:
   /msp/{mspid}:
     get:
       tags:
-        - 1. MSP
+        - 01. MSP
       summary: Get MSP by ID
       description: Retrieves a specific MSP by its ID
       operationId: getMSP
@@ -132,7 +132,7 @@ paths:
     
     put:
       tags:
-        - 1. MSP
+        - 01. MSP
       summary: Update MSP
       description: Updates an existing MSP's information
       operationId: updateMSP
@@ -162,7 +162,7 @@ paths:
     
     delete:
       tags:
-        - 1. MSP
+        - 01. MSP
       summary: Delete MSP
       description: Deletes an existing MSP
       operationId: deleteMSP
@@ -185,7 +185,7 @@ paths:
   /msp/suspend/{mspid}:
     put:
       tags:
-        - 1. MSP
+        - 01. MSP
       summary: Suspend MSP
       description: Suspends an MSP and all its organizations
       operationId: suspendMSP
@@ -208,7 +208,7 @@ paths:
   /msp/activate/{mspid}:
     put:
       tags:
-        - 1. MSP
+        - 01. MSP
       summary: Activate MSP
       description: Activates a suspended MSP with subscription details
       operationId: activateMSP
@@ -240,7 +240,7 @@ paths:
   /msp/distributor/change:
     post:
       tags:
-        - 2. MSP Distributor
+        - 02. MSP Distributor
       summary: Change MSP distributor
       description: Changes the distributor for an MSP
       operationId: changeMSPDistributor
@@ -269,7 +269,7 @@ paths:
   /msp/distributor/usage:
     get:
       tags:
-        - 2. MSP Distributor
+        - 02. MSP Distributor
       summary: Get distributor usage
       description: Retrieves billing usage information for all MSPs under the distributor
       operationId: getMSPDistributorUsage
@@ -291,7 +291,7 @@ paths:
   /msp/user/{mspid}:
     post:
       tags:
-        - 3. MSP Users
+        - 03. MSP Users
       summary: Create MSP user
       description: Creates a new user for a specific MSP
       operationId: createMSPUser
@@ -319,7 +319,7 @@ paths:
     
     get:
       tags:
-        - 3. MSP Users
+        - 03. MSP Users
       summary: Get all MSP users
       description: Retrieves all users for a specific MSP
       operationId: getMSPAllUsers
@@ -342,7 +342,7 @@ paths:
   /msp/user/{mspid}/{id}:
     get:
       tags:
-        - 3. MSP Users
+        - 03. MSP Users
       summary: Get MSP user
       description: Retrieves a specific user from an MSP
       operationId: getMSPUser
@@ -365,7 +365,7 @@ paths:
     
     put:
       tags:
-        - 3. MSP Users
+        - 03. MSP Users
       summary: Update MSP user
       description: Updates an existing MSP user
       operationId: updateMSPUser
@@ -396,7 +396,7 @@ paths:
     
     delete:
       tags:
-        - 3. MSP Users
+        - 03. MSP Users
       summary: Delete MSP user
       description: Deletes an MSP user
       operationId: deleteMSPUser
@@ -421,7 +421,7 @@ paths:
   /msp/organisation/{mspid}:
     post:
       tags:
-        - 4. MSP Organisations
+        - 04. MSP Organisations
       summary: Create organization
       description: Creates a new organization under an MSP
       operationId: createMSPOrganisation
@@ -450,7 +450,7 @@ paths:
   /msp/organisation/{mspid}/{orgid}:
     get:
       tags:
-        - 4. MSP Organisations
+        - 04. MSP Organisations
       summary: Get organization
       description: Retrieves a specific organization under an MSP
       operationId: getMSPOrganisation
@@ -473,7 +473,7 @@ paths:
     
     put:
       tags:
-        - 4. MSP Organisations
+        - 04. MSP Organisations
       summary: Update organization
       description: Updates an existing organization under an MSP
       operationId: updateMSPOrganisation
@@ -504,7 +504,7 @@ paths:
     
     delete:
       tags:
-        - 4. MSP Organisations
+        - 04. MSP Organisations
       summary: Delete organization
       description: Deletes an organization under an MSP
       operationId: deleteMSPOrganisation
@@ -528,7 +528,7 @@ paths:
   /msp/organisations/{mspid}:
     get:
       tags:
-        - 4. MSP Organisations
+        - 04. MSP Organisations
       summary: Get all organizations
       description: Retrieves all organizations under an MSP
       operationId: getMSPAllOrganisations
@@ -552,7 +552,7 @@ paths:
   /msp/organisation/session/{mspid}/{orgid}:
     post:
       tags:
-        - 5. MSP Organisation Sessions
+        - 05. MSP Organisation Sessions
       summary: Create organization session
       description: Creates a new session for accessing an MSP organization
       operationId: createMSPOrganisationSession
@@ -582,7 +582,7 @@ paths:
   /msp/organisation/session/{mspid}/{sessionid}:
     put:
       tags:
-        - 5. MSP Organisation Sessions
+        - 05. MSP Organisation Sessions
       summary: Update organization session
       description: Updates an existing MSP organization session
       operationId: updateMSPOrganisationSession
@@ -613,7 +613,7 @@ paths:
     
     delete:
       tags:
-        - 5. MSP Organisation Sessions
+        - 05. MSP Organisation Sessions
       summary: Delete organization session
       description: Deletes an MSP organization session
       operationId: deleteMSPOrganisationSession
@@ -638,7 +638,7 @@ paths:
   /msp/organisation/subscription/{mspid}/{orgid}:
     put:
       tags:
-        - 6. MSP Organisation Subscriptions
+        - 06. MSP Organisation Subscriptions
       summary: Update organization subscription
       description: Updates the subscription details for an MSP organization
       operationId: updateMSPOrganisationSubscription
@@ -670,7 +670,7 @@ paths:
   /msp/organisation/suspend/{mspid}/{orgid}:
     put:
       tags:
-        - 6. MSP Organisation Subscriptions
+        - 06. MSP Organisation Subscriptions
       summary: Suspend organization
       description: Suspends an MSP organization's subscription
       operationId: suspendMSPOrganisation
@@ -694,7 +694,7 @@ paths:
   /msp/organisation/activate/{mspid}/{orgid}:
     put:
       tags:
-        - 6. MSP Organisation Subscriptions
+        - 06. MSP Organisation Subscriptions
       summary: Activate organization
       description: Activates an MSP organization's subscription
       operationId: activateMSPOrganisation
@@ -719,7 +719,7 @@ paths:
   /msp/usage/{mspid}:
     get:
       tags:
-        - 7. MSP Usage & Billing
+        - 07. MSP Usage & Billing
       summary: Get MSP usage
       description: Retrieves billing usage information for all organizations under an MSP
       operationId: getMSPBillingUsage
@@ -742,7 +742,7 @@ paths:
   /msp/usage/{mspid}/{orgid}:
     get:
       tags:
-        - 7. MSP Usage & Billing
+        - 07. MSP Usage & Billing
       summary: Get organization usage
       description: Retrieves usage information for a specific MSP organization
       operationId: getMSPOrgUsage
@@ -767,7 +767,7 @@ paths:
   /msp/token/{mspid}:
     post:
       tags:
-        - 8. MSP Tokens
+        - 08. MSP Tokens
       summary: Generate MSP token
       description: Generates a new session token for an MSP
       operationId: generateMSPSessionToken
@@ -791,7 +791,7 @@ paths:
   /msp/organisation/gateway/{mspid}/{orgid}:
     post:
       tags:
-        - 9. MSP Organisation Gateways
+        - 09. MSP Organisation Gateways
       summary: Create gateway
       description: Creates a new gateway for an MSP organization
       operationId: createMSPOrgGateway
@@ -820,7 +820,7 @@ paths:
     
     get:
       tags:
-        - 9. MSP Organisation Gateways
+        - 09. MSP Organisation Gateways
       summary: Get all gateways
       description: Retrieves all gateways for a specific MSP organization
       operationId: getMSPOrgAllGateways
@@ -844,7 +844,7 @@ paths:
   /msp/organisation/gateway/{mspid}/{orgid}/{cgwid}:
     get:
       tags:
-        - 9. MSP Organisation Gateways
+        - 09. MSP Organisation Gateways
       summary: Get gateway
       description: Retrieves a specific gateway by its ID for an MSP organization
       operationId: getMSPOrgGateway
@@ -868,7 +868,7 @@ paths:
     
     put:
       tags:
-        - 9. MSP Organisation Gateways
+        - 09. MSP Organisation Gateways
       summary: Update gateway
       description: Updates an existing gateway for an MSP organization
       operationId: updateMSPOrgGateway
@@ -900,7 +900,7 @@ paths:
     
     delete:
       tags:
-        - 9. MSP Organisation Gateways
+        - 09. MSP Organisation Gateways
       summary: Delete gateway
       description: Deletes a gateway from an MSP organization
       operationId: deleteMSPOrgGateway
