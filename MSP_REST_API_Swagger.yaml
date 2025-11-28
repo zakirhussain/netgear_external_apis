@@ -182,57 +182,6 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  # ==================== MSP Distributor Endpoints ====================
-  /msp/distributor/change:
-    post:
-      tags:
-        - 2. MSP Distributor
-      summary: Change MSP distributor
-      description: Changes the distributor for an MSP
-      operationId: changeMSPDistributor
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ChangeMSPDistributorRequest'
-      responses:
-        '200':
-          description: Distributor changed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StatusCodeRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /msp/distributor/usage:
-    get:
-      tags:
-        - 2. MSP Distributor
-      summary: Get distributor usage
-      description: Retrieves billing usage information for all MSPs under the distributor
-      operationId: getMSPDistributorUsage
-      responses:
-        '200':
-          description: Distributor usage information retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/MSPDistributorUsage'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
   /msp/suspend/{mspid}:
     put:
       tags:
@@ -287,6 +236,57 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  # ==================== MSP Distributor Endpoints ====================
+  /msp/distributor/change:
+    post:
+      tags:
+        - 2. MSP Distributor
+      summary: Change MSP distributor
+      description: Changes the distributor for an MSP
+      operationId: changeMSPDistributor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeMSPDistributorRequest'
+      responses:
+        '200':
+          description: Distributor changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusCodeRsp'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /msp/distributor/usage:
+    get:
+      tags:
+        - 2. MSP Distributor
+      summary: Get distributor usage
+      description: Retrieves billing usage information for all MSPs under the distributor
+      operationId: getMSPDistributorUsage
+      responses:
+        '200':
+          description: Distributor usage information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MSPDistributorUsage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   # ==================== MSP User Endpoints ====================
   /msp/user/{mspid}:
     post:
@@ -319,7 +319,7 @@ paths:
     
     get:
       tags:
-        - 2. MSP Users
+        - 3. MSP Users
       summary: Get all MSP users
       description: Retrieves all users for a specific MSP
       operationId: getMSPAllUsers
