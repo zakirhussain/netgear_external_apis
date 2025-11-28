@@ -182,6 +182,57 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  # ==================== MSP Distributor Endpoints ====================
+  /msp/distributor/change:
+    post:
+      tags:
+        - 2. MSP Distributor
+      summary: Change MSP distributor
+      description: Changes the distributor for an MSP
+      operationId: changeMSPDistributor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeMSPDistributorRequest'
+      responses:
+        '200':
+          description: Distributor changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusCodeRsp'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /msp/distributor/usage:
+    get:
+      tags:
+        - 2. MSP Distributor
+      summary: Get distributor usage
+      description: Retrieves billing usage information for all MSPs under the distributor
+      operationId: getMSPDistributorUsage
+      responses:
+        '200':
+          description: Distributor usage information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MSPDistributorUsage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /msp/suspend/{mspid}:
     put:
       tags:
@@ -233,57 +284,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  # ==================== MSP Distributor Endpoints ====================
-  /msp/distributor/change:
-    post:
-      tags:
-        - 2. MSP Distributor
-      summary: Change MSP distributor
-      description: Changes the distributor for an MSP
-      operationId: changeMSPDistributor
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ChangeMSPDistributorRequest'
-      responses:
-        '200':
-          description: Distributor changed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StatusCodeRsp'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /msp/distributor/usage:
-    get:
-      tags:
-        - 2. MSP Distributor
-      summary: Get distributor usage
-      description: Retrieves billing usage information for all MSPs under the distributor
-      operationId: getMSPDistributorUsage
-      responses:
-        '200':
-          description: Distributor usage information retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/MSPDistributorUsage'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -1238,18 +1238,17 @@ components:
       type: object
       required:
         - mspID
-        - newDistributorID
+        - mspName
       properties:
         mspID:
           type: string
           format: uuid
           description: MSP ID to change distributor for
           example: "123e4567-e89b-12d3-a456-426614174000"
-        newDistributorID:
+        mspName:
           type: string
-          format: uuid
-          description: New distributor ID
-          example: "223e4567-e89b-12d3-a456-426614174001"
+          description: MSP name to validate
+          example: "example-msp"
 
     MSPDistributorUsage:
       type: object
