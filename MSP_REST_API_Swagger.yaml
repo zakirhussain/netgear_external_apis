@@ -1569,16 +1569,6 @@ components:
           minimum: 0
           description: Number of subscribed gateways
           example: 10
-        totaluserscost:
-          type: number
-          format: double
-          description: Total cost for users
-          example: 1000.00
-        totalgwscost:
-          type: number
-          format: double
-          description: Total cost for gateways
-          example: 500.00
         sase:
           type: string
           description: SASE tier
