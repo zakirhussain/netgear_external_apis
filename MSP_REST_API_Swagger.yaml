@@ -1586,6 +1586,10 @@ components:
           enum:
             - essentials
             - pro
+        isnfr:
+          type: boolean
+          description: Indicates if this is a Not-For-Resale (NFR) organization
+          example: false
 
     PartnerOrgsUsage:
       type: object
